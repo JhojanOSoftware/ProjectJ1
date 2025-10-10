@@ -205,7 +205,7 @@ def example_service_receipt():
     return receipt, receipt2
 
 
-def GenerarComprobantes(WaterValue:int, LuzValue: int, AseoValue:int, GasValue:int, Arrendatarios=int):
+def GenerarComprobantes(WaterValue:int, LuzValue: int, AseoValue:int, GasValue:int, nombre_arrendatario: str, nombre_ubicacion:str, direccion_ubicacion:str, Arrendatarios=int):
     """Example 5: PDF Generation"""
     if not PDF_AVAILABLE:
         print("\n=== EXAMPLE 5: PDF Generation (UNAVAILABLE) ===")

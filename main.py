@@ -155,9 +155,9 @@ def generar_comprobante(
     nombre_arrendatario = arrendatario_data["nombre_arrendatario"]
     nombre_ubicacion = arrendatario_data["nombre_ubicacion"]
     direccion_ubicacion = arrendatario_data["direccion_ubicacion"]
-    GenerarComprobantes(WaterValue=WaterValue, LuzValue=LuzValue, AseoValue=AseoValue, GasValue=GasValue, Arrendatarios=Arrendatarios,nombre_arrendatario=nombre_arrendatario,
+    GenerarComprobantes(WaterValue=WaterValue, LuzValue=LuzValue, AseoValue=AseoValue, GasValue=GasValue,nombre_arrendatario=nombre_arrendatario,
         nombre_ubicacion=nombre_ubicacion,
-        direccion_ubicacion=direccion_ubicacion)
+        direccion_ubicacion=direccion_ubicacion,Arrendatarios=Arrendatarios)
     return FileResponse("sample_receipt_advanced.pdf", media_type="application/pdf")
 
 
