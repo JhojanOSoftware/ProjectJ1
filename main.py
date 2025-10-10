@@ -88,10 +88,10 @@ def crear_proyecto(Arrendatario: Arrendatario):
         cur = conn.cursor()
         cur.execute(
             """
-            INSERT INTO arrendatarios_J0 (nombre_arrendatario, nombre_ubicacion, direccion_ubicacion, telefono, email)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO arrendatarios_J0 (nombre_arrendatario, nombre_ubicacion, direccion_ubicacion,personas_por_arrendatario, telefono, email)
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (Arrendatario.nombre_arrendatario, Arrendatario.nombre_ubicacion, Arrendatario.direccion_ubicacion, Arrendatario.telefono, Arrendatario.email)
+            (Arrendatario.nombre_arrendatario, Arrendatario.nombre_ubicacion, Arrendatario.direccion_ubicacion,Arrendatario.personas_por_arrendatario, Arrendatario.telefono, Arrendatario.email)
         )
         conn.commit()
         new_id = cur.lastrowid
@@ -109,7 +109,7 @@ def obtener_arrendatario(nombre_ubicacion: str):
     try:
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute("SELECT nombre_arrendatario,nombre_ubicacion,direccion_ubicacion,personas_por_arrendatario  FROM arrendatarios_J0 WHERE nombre_ubicacion = ?", (nombre_ubicacion,))
+        cur.execute("SELECT nombre_arrendatario,nombre_ubicacion,direccion_ubicacion,personas_por_arrendatario,personas_por_arrendatario  FROM arrendatarios_J0 WHERE nombre_ubicacion = ?", (nombre_ubicacion,))
         conn.commit()
         rows = cur.fetchall()
         conn.close()
@@ -126,7 +126,7 @@ def eliminar_arrendatario(arrendatario_id: int):
     try:
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute("DELETE FROM arrendatarios_J0 WHERE id = ?", (arrendatario_id,))
+        cur.execute("DELETE * FROM arrendatarios_J0 WHERE id = ?", (arrendatario_id,))
         conn.commit()
         affected = cur.rowcount
         conn.close()
