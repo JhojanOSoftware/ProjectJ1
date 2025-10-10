@@ -368,7 +368,7 @@ class ReceiptGenerator:
 def create_sample_business(nombre_ubicacion:str, direccion_ubicacion:str) -> BusinessInfo:
     """Testeo Inicial"""
     return BusinessInfo(
-        name="Servicios de Arrendamiento Barrio Estados Unidos",
+        name="Servicios de Arrendamiento" + " " + nombre_ubicacion,
         direccion_ubicacion=direccion_ubicacion,
         city="Bogota",
         nombre_ubicacion=nombre_ubicacion,

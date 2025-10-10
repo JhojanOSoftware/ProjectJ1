@@ -49,6 +49,7 @@ def Db_Arrendatarios() -> None:
             nombre_arrendatario TEXT NOT NULL,
             nombre_ubicacion TEXT NOT NULL,
             direccion_ubicacion TEXT NOT NULL,
+            personas_por_arrendatario INTEGER,
             telefono TEXT,
             email TEXT
         )
@@ -108,7 +109,7 @@ def obtener_arrendatario(nombre_ubicacion: str):
     try:
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute("SELECT nombre_arrendatario,nombre_ubicacion,direccion_ubicacion  FROM arrendatarios_J0 WHERE nombre_ubicacion = ?", (nombre_ubicacion,))
+        cur.execute("SELECT nombre_arrendatario,nombre_ubicacion,direccion_ubicacion,personas_por_arrendatario  FROM arrendatarios_J0 WHERE nombre_ubicacion = ?", (nombre_ubicacion,))
         conn.commit()
         rows = cur.fetchall()
         conn.close()
@@ -155,9 +156,10 @@ def generar_comprobante(
     nombre_arrendatario = arrendatario_data["nombre_arrendatario"]
     nombre_ubicacion = arrendatario_data["nombre_ubicacion"]
     direccion_ubicacion = arrendatario_data["direccion_ubicacion"]
+    personas_por_arrendatario = arrendatario_data.get("personas_por_arrendatario")
     GenerarComprobantes(WaterValue=WaterValue, LuzValue=LuzValue, AseoValue=AseoValue, GasValue=GasValue,nombre_arrendatario=nombre_arrendatario,
         nombre_ubicacion=nombre_ubicacion,
-        direccion_ubicacion=direccion_ubicacion,Arrendatarios=Arrendatarios)
+        direccion_ubicacion=direccion_ubicacion,personas_por_arrendatario=personas_por_arrendatario,Arrendatarios=Arrendatarios)
     return FileResponse("sample_receipt_advanced.pdf", media_type="application/pdf")
 
 
