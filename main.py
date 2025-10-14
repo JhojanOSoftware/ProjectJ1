@@ -11,6 +11,8 @@ limiter = Limiter(key_func=get_remote_address)
 from ClaseArrendatario import Arrendatario
 from  recexamples import *
 from fastapi.responses import FileResponse
+import zipfile
+import os
 
 # Inicializar la app de FastAPI
 app = FastAPI(title="Actividad Microsite API")
@@ -58,6 +60,17 @@ def Db_Arrendatarios() -> None:
     
     conn.commit()
     conn.close()
+
+def calcular_servicios (WaterValue:int, LuzValue: int, AseoValue:int, GasValue:int, personas_por_arrendatario:int, headcounttotales_por_arr:int, Arrendatarios:int):
+
+    valor_unitario = WaterValue / headcounttotales_por_arr
+    PrecioAgua = valor_unitario * personas_por_arrendatario
+  
+    PrecioLuz = LuzValue / Arrendatarios
+    PrecioAseo = AseoValue / Arrendatarios
+    PrecioGas = GasValue / Arrendatarios
+
+    return (PrecioAgua, PrecioLuz, PrecioAseo, PrecioGas)
 
 
 @app.on_event("startup")
@@ -142,26 +155,53 @@ def eliminar_arrendatario(arrendatario_id: int):
 
 
 @app.post("/GenerarComprobantes/")
-def generar_comprobante(
+def generar_comprobante_end_point(
     WaterValue: int = Form(...),
     LuzValue: int = Form(...),
     AseoValue: int = Form(...),
     GasValue: int = Form(...),
     Arrendatarios: int = Form(...),
     Selecionador: str = Form(...)
-):
+):   
+    archivos = []
     respuesta = obtener_arrendatario(Selecionador)
-    arrendatario_data = respuesta["data"][0]  # el primer resultado
 
-    nombre_arrendatario = arrendatario_data["nombre_arrendatario"]
-    nombre_ubicacion = arrendatario_data["nombre_ubicacion"]
-    direccion_ubicacion = arrendatario_data["direccion_ubicacion"]
-    personas_por_arrendatario = arrendatario_data.get("personas_por_arrendatario")
-    GenerarComprobantes(WaterValue=WaterValue, LuzValue=LuzValue, AseoValue=AseoValue, GasValue=GasValue,nombre_arrendatario=nombre_arrendatario,
+    arrendatario_data = respuesta["data"]  # recupera los datos del arrendatario seleccionado
+
+
+    
+    headcounttotales_por_arr = sum(arrendatario["personas_por_arrendatario"] for arrendatario in arrendatario_data)
+
+
+
+    for arrendatario in arrendatario_data:  #Blucle para cada arrendatario y extraer sus datos
+        nombre_arrendatario = arrendatario["nombre_arrendatario"]
+        nombre_ubicacion = arrendatario["nombre_ubicacion"]
+        direccion_ubicacion = arrendatario["direccion_ubicacion"]
+        personas_por_arrendatario = arrendatario.get("personas_por_arrendatario")
+
+
+
+       
+
+        PrecioAgua, PrecioLuz, PrecioAseo, PrecioGas = calcular_servicios(
+            WaterValue,LuzValue,AseoValue,GasValue,personas_por_arrendatario,headcounttotales_por_arr,Arrendatarios        )
+
+        
+        archivopdf = f"{nombre_arrendatario}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"  # Crea un archivo PDF único por arrendatario   
+
+        GenerarComprobantes(WaterValue=PrecioAgua, LuzValue=PrecioLuz, AseoValue=PrecioAseo, GasValue=PrecioGas,nombre_arrendatario=nombre_arrendatario,
         nombre_ubicacion=nombre_ubicacion,
         direccion_ubicacion=direccion_ubicacion,personas_por_arrendatario=personas_por_arrendatario,Arrendatarios=Arrendatarios)
-    return FileResponse("sample_receipt_advanced.pdf", media_type="application/pdf")
 
+
+        archivos.append(archivopdf)
+
+    zip_filename = f"comprobantes_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
+    with zipfile.ZipFile(zip_filename, "w") as zipf:
+            for archivo in archivos:
+                zipf.write(archivo)
+    return FileResponse(zip_filename, media_type='application/zip', filename=zip_filename)
 
 @app.get("/")  
 def read_root():

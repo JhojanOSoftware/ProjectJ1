@@ -146,7 +146,7 @@ class PDFReceiptGenerator(ReceiptGenerator):
         business_info = f"""
         <para align=center>
         {receipt.business_info.direccion_ubicacion}<br/>
-        {receipt.business_info.city}, {receipt.business_info.nombre_ubicacion} {receipt.business_info.zip_code}<br/>
+        {receipt.business_info.city}, {receipt.business_info.nombre_ubicacion} <br/>
         """
         
         if receipt.business_info.phone:
@@ -228,8 +228,6 @@ class PDFReceiptGenerator(ReceiptGenerator):
         
         # Footer
         story.append(Spacer(1, 30))
-        footer = Paragraph("<para align=center><i>Thank you for your business!</i></para>", styles['Normal'])
-        story.append(footer)
         
         doc.build(story)
         return filename

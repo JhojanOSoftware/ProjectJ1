@@ -36,7 +36,6 @@ class BusinessInfo:
     direccion_ubicacion: str
     city: str
     nombre_ubicacion: str
-    zip_code: str
     phone: Optional[str] = None
     email: Optional[str] = None
     
@@ -111,7 +110,7 @@ class ReceiptGenerator:
         lines.append("=" * 50)
         lines.append(f"{receipt.business_info.name}".center(50))
         lines.append(f"{receipt.business_info.direccion_ubicacion}".center(50))
-        lines.append(f"{receipt.business_info.city}, {receipt.business_info.nombre_ubicacion} {receipt.business_info.zip_code}".center(50))
+        lines.append(f"{receipt.business_info.city}, {receipt.business_info.nombre_ubicacion}".center(50))
         
         if receipt.business_info.phone:
             lines.append(f"Phone: {receipt.business_info.phone}".center(50))
@@ -156,7 +155,6 @@ class ReceiptGenerator:
             lines.append(f"Notes: {receipt.notes}")
             lines.append("=" * 50)
         
-        lines.append("Thank you for your business!".center(50))
         lines.append("=" * 50)
         
         return "\n".join(lines)
@@ -243,8 +241,8 @@ class ReceiptGenerator:
                 <div class="header">
                     <div class="business-name">{receipt.business_info.name}</div>
                     <div>{receipt.business_info.direccion_ubicacion}</div>
-                    <div>{receipt.business_info.city}, {receipt.business_info.nombre_ubicacion} {receipt.business_info.zip_code}</div>"""
-        
+                    <div>{receipt.business_info.city}, {receipt.business_info.nombre_ubicacion}</div>"""
+
         if receipt.business_info.phone:
             html += f"<div>Phone: {receipt.business_info.phone}</div>"
         if receipt.business_info.email:
@@ -317,7 +315,6 @@ class ReceiptGenerator:
         
         html += """
                 <div class="footer">
-                    <div>Thank you for your business!</div>
                 </div>
             </div>
         </body>
@@ -372,7 +369,6 @@ def create_sample_business(nombre_ubicacion:str, direccion_ubicacion:str) -> Bus
         direccion_ubicacion=direccion_ubicacion,
         city="Bogota",
         nombre_ubicacion=nombre_ubicacion,
-        zip_code="00000",
         phone="3102145373",
         email="N/A",
         
