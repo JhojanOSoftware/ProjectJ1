@@ -230,4 +230,4 @@ class PDFReceiptGenerator(ReceiptGenerator):
         story.append(Spacer(1, 30))
         
         doc.build(story)
-        return filename
+ 

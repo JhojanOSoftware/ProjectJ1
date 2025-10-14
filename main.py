@@ -1,16 +1,18 @@
+import shutil
 import sqlite3
 import traceback
 from xmlrpc import client
 from fastapi.responses import JSONResponse
-from fastapi import FastAPI, HTTPException, status,Form
+from fastapi import FastAPI, HTTPException, status,Form, BackgroundTasks
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 limiter = Limiter(key_func=get_remote_address)
-from ClaseArrendatario import Arrendatario
+from models.ClaseArrendatario import Arrendatario
 from  recexamples import *
 from fastapi.responses import FileResponse
+import tempfile
 import zipfile
 import os
 
@@ -33,7 +35,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DB_FILE = "J0BaseDatos.db"
+DB_FILE = "data/J0BaseDatos.db"
 
 
 def get_conn() -> sqlite3.Connection:
@@ -72,6 +74,18 @@ def calcular_servicios (WaterValue:int, LuzValue: int, AseoValue:int, GasValue:i
 
     return (PrecioAgua, PrecioLuz, PrecioAseo, PrecioGas)
 
+def limpieza_files(paths: list):
+    for p in paths: 
+        try:  
+            if os.path.isfile(p):
+                os.remove(p)
+            else: 
+                os.path.isdir(p)
+                shutil.rmtree(p)
+        except Exception as e:
+            print(f"Error eliminando {p}: {e}")
+
+    
 
 @app.on_event("startup")
 def startup():
@@ -122,7 +136,7 @@ def obtener_arrendatario(nombre_ubicacion: str):
     try:
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute("SELECT nombre_arrendatario,nombre_ubicacion,direccion_ubicacion,personas_por_arrendatario,personas_por_arrendatario  FROM arrendatarios_J0 WHERE nombre_ubicacion = ?", (nombre_ubicacion,))
+        cur.execute("SELECT nombre_arrendatario,nombre_ubicacion,direccion_ubicacion,personas_por_arrendatario  FROM arrendatarios_J0 WHERE nombre_ubicacion = ?", (nombre_ubicacion,))
         conn.commit()
         rows = cur.fetchall()
         conn.close()
@@ -161,8 +175,12 @@ def generar_comprobante_end_point(
     AseoValue: int = Form(...),
     GasValue: int = Form(...),
     Arrendatarios: int = Form(...),
-    Selecionador: str = Form(...)
+    Selecionador: str = Form(...),
+    backg = BackgroundTasks
 ):   
+    temp= tempfile.mkdtemp(prefix="comprobantes_")
+
+
     archivos = []
     respuesta = obtener_arrendatario(Selecionador)
 
@@ -196,12 +214,17 @@ def generar_comprobante_end_point(
 
 
         archivos.append(archivopdf)
-
+    zip_path = os.path.join(temp, zip_filename) 
     zip_filename = f"comprobantes_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
-    with zipfile.ZipFile(zip_filename, "w") as zipf:
+    
+
+    with zipfile.ZipFile(zip_path, "w") as zipf:
             for archivo in archivos:
                 zipf.write(archivo)
-    return FileResponse(zip_filename, media_type='application/zip', filename=zip_filename)
+
+    backg.add_task(limpieza_files, [zip_path,temp,*archivos])            
+    return FileResponse(zip_path,media_type="application/zip", filename=zip_path)
+
 
 @app.get("/")  
 def read_root():
