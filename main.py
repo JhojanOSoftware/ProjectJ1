@@ -75,12 +75,11 @@ def calcular_servicios (WaterValue:int, LuzValue: int, AseoValue:int, GasValue:i
     return (PrecioAgua, PrecioLuz, PrecioAseo, PrecioGas)
 
 def limpieza_files(paths: list):
-    for p in paths: 
-        try:  
+    for p in paths:
+        try:
             if os.path.isfile(p):
                 os.remove(p)
-            else: 
-                os.path.isdir(p)
+            elif os.path.isdir(p):
                 shutil.rmtree(p)
         except Exception as e:
             print(f"Error eliminando {p}: {e}")
@@ -176,54 +175,57 @@ def generar_comprobante_end_point(
     GasValue: int = Form(...),
     Arrendatarios: int = Form(...),
     Selecionador: str = Form(...),
-    backg = BackgroundTasks
+    backg : BackgroundTasks = BackgroundTasks()
 ):   
-    temp= tempfile.mkdtemp(prefix="comprobantes_")
+    temp = tempfile.mkdtemp(prefix="comprobantes_")
 
-
+    zip_filename = f'comprobantes_{datetime.now().strftime("%Y%m%d_%H%M%S")}.zip'
+    zip_path = os.path.join(temp, zip_filename)
     archivos = []
     respuesta = obtener_arrendatario(Selecionador)
+    arrendatario_data = respuesta["data"]  # lista de dicts
 
-    arrendatario_data = respuesta["data"]  # recupera los datos del arrendatario seleccionado
+    # asegurar que las cantidades son int y evitar None
+    headcounttotales_por_arr = sum(int(arr.get("personas_por_arrendatario") or 1) for arr in arrendatario_data)
 
-
-    
-    headcounttotales_por_arr = sum(arrendatario["personas_por_arrendatario"] for arrendatario in arrendatario_data)
-
-
-
-    for arrendatario in arrendatario_data:  #Blucle para cada arrendatario y extraer sus datos
+    for arrendatario in arrendatario_data:
         nombre_arrendatario = arrendatario["nombre_arrendatario"]
         nombre_ubicacion = arrendatario["nombre_ubicacion"]
         direccion_ubicacion = arrendatario["direccion_ubicacion"]
-        personas_por_arrendatario = arrendatario.get("personas_por_arrendatario")
-
-
-
-       
+        personas_por_arrendatario = int(arrendatario.get("personas_por_arrendatario") or 1)
 
         PrecioAgua, PrecioLuz, PrecioAseo, PrecioGas = calcular_servicios(
-            WaterValue,LuzValue,AseoValue,GasValue,personas_por_arrendatario,headcounttotales_por_arr,Arrendatarios        )
+            WaterValue, LuzValue, AseoValue, GasValue,
+            personas_por_arrendatario, headcounttotales_por_arr, Arrendatarios
+        )
 
-        
-        archivopdf = f"{nombre_arrendatario}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"  # Crea un archivo PDF único por arrendatario   
+        # pedir al generador que escriba el PDF dentro del directorio temporal y devuelva la ruta
+        pdf_path = GenerarComprobantes(
+            WaterValue=PrecioAgua, LuzValue=PrecioLuz, AseoValue=PrecioAseo, GasValue=PrecioGas,
+            nombre_arrendatario=nombre_arrendatario,
+            nombre_ubicacion=nombre_ubicacion,
+            direccion_ubicacion=direccion_ubicacion,
+            personas_por_arrendatario=personas_por_arrendatario,
+            Arrendatarios=Arrendatarios,
+            output_path=temp
+        )
 
-        GenerarComprobantes(WaterValue=PrecioAgua, LuzValue=PrecioLuz, AseoValue=PrecioAseo, GasValue=PrecioGas,nombre_arrendatario=nombre_arrendatario,
-        nombre_ubicacion=nombre_ubicacion,
-        direccion_ubicacion=direccion_ubicacion,personas_por_arrendatario=personas_por_arrendatario,Arrendatarios=Arrendatarios)
+        # sólo añadir al ZIP si el archivo existe
+        if pdf_path and os.path.exists(pdf_path):
+            archivos.append(pdf_path)
+        else:
+            print(f"PDF faltante para {nombre_arrendatario}: {pdf_path}")
 
-
-        archivos.append(archivopdf)
-    zip_path = os.path.join(temp, zip_filename) 
-    zip_filename = f"comprobantes_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
-    
-
+    # crear zip en temp y añadir archivos existentes
     with zipfile.ZipFile(zip_path, "w") as zipf:
-            for archivo in archivos:
-                zipf.write(archivo)
+        for file_path in archivos:
+            zipf.write(file_path, arcname=os.path.basename(file_path))
 
-    backg.add_task(limpieza_files, [zip_path,temp,*archivos])            
-    return FileResponse(zip_path,media_type="application/zip", filename=zip_path)
+    # programar limpieza del directorio temporal completo (zip + pdfs)
+    if backg:
+        backg.add_task(limpieza_files, [temp])
+
+    return FileResponse(zip_path, media_type="application/zip", filename=zip_filename)
 
 
 @app.get("/")  

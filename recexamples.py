@@ -3,6 +3,7 @@ Receipt Generator Usage Examples
 Demonstrates how to use the virtual receipt generator with various scenarios.
 """
 from datetime import datetime
+import os
 
 
 from recgenerator import (
@@ -204,7 +205,7 @@ def example_service_receipt():
 
 
 
-def GenerarComprobantes(WaterValue:int, LuzValue: int, AseoValue:int, GasValue:int, nombre_arrendatario: str, nombre_ubicacion:str, direccion_ubicacion:str, personas_por_arrendatario:int, Arrendatarios=int):
+def GenerarComprobantes(WaterValue:int, LuzValue: int, AseoValue:int, GasValue:int, nombre_arrendatario: str, nombre_ubicacion:str, direccion_ubicacion:str, personas_por_arrendatario:int, Arrendatarios=int,output_path=None):
 
     
     # Use PDF-enabled generator
@@ -233,19 +234,27 @@ def GenerarComprobantes(WaterValue:int, LuzValue: int, AseoValue:int, GasValue:i
     
 
     
-    
     try:
         # Generate simple PDF
         #simple_pdf = pdf_generator.to_pdf_simple(receipt, "sample_receipt_simple.pdf")
         #print(f"Simple PDF generated: {simple_pdf}")
         
-        # Generate Principal PDF
-        archivopdf = f"{nombre_arrendatario}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-        advanced_pdf = pdf_generator.to_pdf_advanced(receipt, archivopdf)
-        
-        
+        # crear nombre de archivo y si se pasa output_path usarlo
+        safe_name = nombre_arrendatario.replace(" ", "_")
+        filename = f"{safe_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        if output_path:
+            filepath = os.path.join(output_path, filename)
+        else:
+            filepath = filename
+
+        # to_pdf_advanced debe escribir el PDF en la ruta completa que le pasemos
+        pdf_generator.to_pdf_advanced(receipt, filepath)
+        return filepath
+
     except Exception as e:
         print(f"Error generating PDF: {e}")
+        return None
+    
     
 
 
