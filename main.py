@@ -152,7 +152,7 @@ def eliminar_arrendatario(arrendatario_id: int):
     try:
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute("DELETE * FROM arrendatarios_J0 WHERE id = ?", (arrendatario_id,))
+        cur.execute("DELETE  FROM arrendatarios_J0 WHERE id = ?", (arrendatario_id,))
         conn.commit()
         affected = cur.rowcount
         conn.close()

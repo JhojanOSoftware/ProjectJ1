@@ -190,7 +190,7 @@ def example_service_receipt():
         items=items,
         customer_info=customer,
         payment_method="Cash",
-        notes="Vehicle: 2018 Honda Civic, License: ABC-1234. Next service recommended in 6 months."
+        notes="Vehicle: 2018 Honda Civic,   cense: ABC-1234. Next service recommended in 6 months."
     )
     receipt2 = generator.create_receipt(
         business_info=business,
