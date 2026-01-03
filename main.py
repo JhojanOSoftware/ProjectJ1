@@ -63,15 +63,31 @@ def Db_Arrendatarios() -> None:
     conn.commit()
     conn.close()
 
-def calcular_servicios (WaterValue:int, LuzValue: int, AseoValue:int, GasValue:int, personas_por_arrendatario:int, headcounttotales_por_arr:int, Arrendatarios:int):
+def total_personas(nombre_ubicacion:str):
 
-    valor_unitario = WaterValue / headcounttotales_por_arr
-    PrecioAgua = valor_unitario * personas_por_arrendatario
-  
+    try :
+        con = get_conn()
+        cur = con.cursor()
+        cur.execute("SELECT SUM(personas_por_arrendatario) as total FROM arrendatarios_J0 WHERE nombre_ubicacion = ?", (nombre_ubicacion,))
+        row = cur.fetchone()
+        con.close()
+        return row["total"] if row["total"] is not None else 1
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error obteniendo total de personas: {e}")
+
+def calcular_servicios(WaterValue: int, LuzValue: int, AseoValue: int, GasValue: int, 
+                       personas_por_arrendatario: int, headcounttotales_por_arr: int, 
+                       Arrendatarios: int, nombre_ubicacion: str):
+                       
+    headcount = total_personas(nombre_ubicacion)              # Total de personas en esa ubicación
+    valor_unitario = WaterValue / headcount                   # Costo por persona
+    PrecioAgua = valor_unitario * personas_por_arrendatario   # Costo de este apartamento
+    
     PrecioLuz = LuzValue / Arrendatarios
     PrecioAseo = AseoValue / Arrendatarios
     PrecioGas = GasValue / Arrendatarios
-
+    
     return (PrecioAgua, PrecioLuz, PrecioAseo, PrecioGas)
 
 def limpieza_files(paths: list):
@@ -174,7 +190,7 @@ def generar_comprobante_end_point(
     AseoValue: int = Form(...),
     GasValue: int = Form(...),
     Arrendatarios: int = Form(...),
-    Selecionador: str = Form(...),
+    Selecionador: str = Form(...), 
     backg : BackgroundTasks = BackgroundTasks()
 ):   
     temp = tempfile.mkdtemp(prefix="comprobantes_")
@@ -196,7 +212,7 @@ def generar_comprobante_end_point(
 
         PrecioAgua, PrecioLuz, PrecioAseo, PrecioGas = calcular_servicios(
             WaterValue, LuzValue, AseoValue, GasValue,
-            personas_por_arrendatario, headcounttotales_por_arr, Arrendatarios
+            personas_por_arrendatario, headcounttotales_por_arr, Arrendatarios, nombre_ubicacion
         )
 
         # pedir al generador que escriba el PDF dentro del directorio temporal y devuelva la ruta
@@ -211,10 +227,10 @@ def generar_comprobante_end_point(
         )
 
         # sólo añadir al ZIP si el archivo existe
-        if pdf_path and os.path.exists(pdf_path):
-            archivos.append(pdf_path)
-        else:
+        if not (pdf_path and  os.path.exists(pdf_path)):
             print(f"PDF faltante para {nombre_arrendatario}: {pdf_path}")
+            return
+        archivos.append(pdf_path)
 
     # crear zip en temp y añadir archivos existentes
     with zipfile.ZipFile(zip_path, "w") as zipf:

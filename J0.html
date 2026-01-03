@@ -87,7 +87,11 @@
     <input type="number" id="Arrendatarios" name="Arrendatarios" placeholder="Cuantos arrendadores hay en la casa?">
     
     <label>Seleccionar Ubicación:</label>
-        <input type="text" name="Selecionador" placeholder="USA o Amparo" required>
+    <select id="opciones" name="Selecionador">
+      <option value="Amparo">Amparo</option>
+      <option value="USA">USA</option>
+    </select>
+
 
     <button type="submit" id="btnGenerarPDF">Generar PDF</button>
 
