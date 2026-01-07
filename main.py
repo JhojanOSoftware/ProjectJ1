@@ -78,15 +78,15 @@ def total_personas(nombre_ubicacion:str):
 
 def calcular_servicios(WaterValue: int, LuzValue: int, AseoValue: int, GasValue: int, 
                        personas_por_arrendatario: int, headcounttotales_por_arr: int, 
-                       Arrendatarios: int, nombre_ubicacion: str):
+                        nombre_ubicacion: str):
                        
-    headcount = total_personas(nombre_ubicacion)              # Total de personas en esa ubicación
+    headcount = max(1,total_personas(nombre_ubicacion))              # Total de personas en esa ubicación
     valor_unitario = WaterValue / headcount                   # Costo por persona
-    PrecioAgua = valor_unitario * personas_por_arrendatario   # Costo de este apartamento
-    
-    PrecioLuz = LuzValue / Arrendatarios
-    PrecioAseo = AseoValue / Arrendatarios
-    PrecioGas = GasValue / Arrendatarios
+    PrecioAgua = valor_unitario * personas_por_arrendatario   # Costo de este apartamen
+    div = max(1, headcounttotales_por_arr)
+    PrecioLuz = LuzValue / div
+    PrecioAseo = AseoValue / div
+    PrecioGas = GasValue / div
     
     return (PrecioAgua, PrecioLuz, PrecioAseo, PrecioGas)
 
@@ -189,7 +189,6 @@ def generar_comprobante_end_point(
     LuzValue: int = Form(...),
     AseoValue: int = Form(...),
     GasValue: int = Form(...),
-    Arrendatarios: int = Form(...),
     Selecionador: str = Form(...), 
     backg : BackgroundTasks = BackgroundTasks()
 ):   
@@ -212,7 +211,7 @@ def generar_comprobante_end_point(
 
         PrecioAgua, PrecioLuz, PrecioAseo, PrecioGas = calcular_servicios(
             WaterValue, LuzValue, AseoValue, GasValue,
-            personas_por_arrendatario, headcounttotales_por_arr, Arrendatarios, nombre_ubicacion
+            personas_por_arrendatario, headcounttotales_por_arr, nombre_ubicacion
         )
 
         # pedir al generador que escriba el PDF dentro del directorio temporal y devuelva la ruta
@@ -222,7 +221,6 @@ def generar_comprobante_end_point(
             nombre_ubicacion=nombre_ubicacion,
             direccion_ubicacion=direccion_ubicacion,
             personas_por_arrendatario=personas_por_arrendatario,
-            Arrendatarios=Arrendatarios,
             output_path=temp
         )
 
