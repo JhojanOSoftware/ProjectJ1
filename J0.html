@@ -40,25 +40,6 @@
       border: 1px solid #ccc;
       border-radius: 5px;
     }
-.btn-group {
-  display: flex;
-  gap: 12px;              /* space between buttons */
-  justify-content: center; /* center horizontally */
-  margin-top: 20px;
-}
-
-.btn {
-  padding: 10px 18px;
-  border-radius: 20px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-  
-
 .btn {
   --border-radius: 24px;
   --padding: 4px;
@@ -68,12 +49,16 @@
 
   position: relative;
   user-select: none;
-  display: flex;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  padding: 0.5em 0.5em 0.5em 1.1em;
+  gap: 8px;
+  padding: 0.7em 1.2em;
   font-family: "Poppins", "Inter", "Segoe UI", sans-serif;
   font-size: 1em;
-  font-weight: 400;
+  font-weight: 600;
+  width: 100%;
+  box-sizing: border-box;
 
   background-color: var(--button-color);
 
@@ -165,9 +150,10 @@
 }
 
 .btn-svg {
-  flex-grow: 1;
+  flex-shrink: 0;
+  width: 24px;
   height: 24px;
-  margin-right: 0.5rem;
+  margin-right: 4px;
   fill: #e8e8e8;
   animation: flicker 2s linear infinite;
   animation-delay: 0.5s;
@@ -190,6 +176,7 @@
   align-items: center;
   justify-content: center;
   max-width: 100%;
+  overflow: hidden;
 }
 .txt-1 {
   position: relative;
@@ -197,18 +184,11 @@
   flex-wrap: wrap;
   gap: 2px;
   justify-content: center;
+  align-items: center;
   word-break: break-word;
 }
-.txt-1,
 .txt-2 {
-  position: absolute;
-  word-spacing: -1em;
-}
-.txt-1 {
-  animation: appear-anim 1s ease-in-out forwards;
-}
-.txt-2 {
-  opacity: 0;
+  display: none;
 }
 @keyframes appear-anim {
   0% {
@@ -352,7 +332,7 @@
 
 /* Hover state */
 .btn:hover {
-  border: solid 1px hsla(var(--highli ght-color-hue), 100%, 80%, 40%);
+  border: solid 1px hsla(var(--highlight-color-hue), 100%, 80%, 40%);
 }
 
 .btn:hover::before {
@@ -448,13 +428,13 @@
   </div>
 </button>
 
-<button type="button" id="buttonModifyOutcome" class="btn">
+<button type="button" id="buttonModifyDB" class="btn">
   <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
     <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
   </svg>
   <div class="txt-wrapper">
     <div class="txt-1">
-      <span class="btn-letter">E</span><span class="btn-letter">d</span><span class="btn-letter">i</span><span class="btn-letter">t</span><span class="btn-letter">a</span><span class="btn-letter">r</span><span class="btn-letter"> </span><span class="btn-letter">D</span><span class="btn-letter">B</span>
+      <span class="btn-letter">Editar</span><span class="btn-letter">BD</span>
     </div>
   </div>
 </button>
