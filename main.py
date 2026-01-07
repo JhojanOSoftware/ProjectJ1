@@ -77,13 +77,14 @@ def total_personas(nombre_ubicacion:str):
         raise HTTPException(status_code=500, detail=f"Error obteniendo total de personas: {e}")
 
 def calcular_servicios(WaterValue: int, LuzValue: int, AseoValue: int, GasValue: int, 
-                       personas_por_arrendatario: int, headcounttotales_por_arr: int, 
-                        nombre_ubicacion: str):
+                       personas_por_arrendatario: int, 
+                        nombre_ubicacion: str, cantidad_arrendatarios: int):
                        
     headcount = max(1,total_personas(nombre_ubicacion))              # Total de personas en esa ubicación
     valor_unitario = WaterValue / headcount                   # Costo por persona
     PrecioAgua = valor_unitario * personas_por_arrendatario   # Costo de este apartamen
-    div = max(1, headcounttotales_por_arr)
+    
+    div = max(1, cantidad_arrendatarios)
     PrecioLuz = LuzValue / div
     PrecioAseo = AseoValue / div
     PrecioGas = GasValue / div
@@ -202,6 +203,7 @@ def generar_comprobante_end_point(
 
     # asegurar que las cantidades son int y evitar None
     headcounttotales_por_arr = sum(int(arr.get("personas_por_arrendatario") or 1) for arr in arrendatario_data)
+    cantidad_arrendatarios = len(arrendatario_data)
 
     for arrendatario in arrendatario_data:
         nombre_arrendatario = arrendatario["nombre_arrendatario"]
@@ -211,7 +213,7 @@ def generar_comprobante_end_point(
 
         PrecioAgua, PrecioLuz, PrecioAseo, PrecioGas = calcular_servicios(
             WaterValue, LuzValue, AseoValue, GasValue,
-            personas_por_arrendatario, headcounttotales_por_arr, nombre_ubicacion
+            personas_por_arrendatario, nombre_ubicacion, cantidad_arrendatarios
         )
 
         # pedir al generador que escriba el PDF dentro del directorio temporal y devuelva la ruta
