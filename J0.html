@@ -5,13 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Formulario de Registro</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
       background-color: #f2f2f2;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      justify-content: flex-start;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
+      padding: 15px;
+      gap: 20px;
     }
 
     form {
@@ -19,26 +26,39 @@
       padding: 25px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      width: 300px;
+      width: 100%;
+      max-width: 400px;
+      flex-shrink: 0;
     }
 
     h2 {
       text-align: center;
       color: #333;
+      margin: 0 0 15px 0;
     }
 
     label {
       display: block;
       margin-top: 10px;
       font-weight: bold;
+      color: #333;
+      font-size: 0.95rem;
     }
 
     input {
       width: 100%;
-      padding: 8px;
-      margin-top: 5px;
+      padding: 10px;
+      margin-top: 6px;
       border: 1px solid #ccc;
       border-radius: 5px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
     }
 .btn {
   --border-radius: 24px;
@@ -49,7 +69,7 @@
 
   position: relative;
   user-select: none;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -59,6 +79,7 @@
   font-weight: 600;
   width: 100%;
   box-sizing: border-box;
+  margin-bottom: 8px;
 
   background-color: var(--button-color);
 
@@ -359,24 +380,120 @@
 
     
     
+    
     select {
       width: 100%;
-      padding: 8px;
-      margin-top: 5px;
+      padding: 10px;
+      margin-top: 6px;
       border: 1px solid #ccc;
       border-radius: 5px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
     }
 
-  .previewoutput
-  {
-    display: none;
-  }
-  .previewoutput {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 12px;
-  background: #f7f7f7;
-}
+    select:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
+    }
+
+    /* Vista Previa Colapsable */
+    .previewoutput {
+      display: none;
+      flex-direction: column;
+      width: 100%;
+      max-width: 500px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .previewoutput.show {
+      display: flex;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.3s ease;
+    }
+
+    .preview-header:hover {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+
+    .preview-header h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      flex-grow: 1;
+    }
+
+    .preview-toggle {
+      font-size: 0.9rem;
+      transition: transform 0.3s ease;
+      display: inline-block;
+      margin-left: 10px;
+    }
+
+    .preview-toggle.collapsed {
+      transform: rotate(-90deg);
+    }
+
+    .preview-content {
+      padding: 20px;
+      max-height: 500px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+    }
+
+    .preview-content.collapsed {
+      max-height: 0;
+      overflow: hidden;
+      padding: 0 20px;
+      opacity: 0;
+    }
+
+    .preview-content p {
+      margin: 10px 0;
+      color: #333;
+    }
+
+    .preview-content p strong {
+      color: #667eea;
+    }
+
+    #previewList {
+      margin: 15px 0;
+    }
+
+    #previewList > div {
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #f9f9f9;
+      transition: all 0.2s ease;
+    }
+
+    #previewList > div:hover {
+      border-color: #667eea;
+      background: #f5f7ff;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    }
+
+    #previewList p {
+      margin: 6px 0;
+      font-size: 0.95rem;
+    }
   </style>
 </head>
 <body>
@@ -453,10 +570,15 @@
 
 
 <div id="previewoutput" class="previewoutput">
-  <h3>Vista Previa a PDF</h3>
-  <p><strong>Ubicación:</strong> <span id="ubicacion"></span></p>
-  <div id="previewList"></div>
-  <p><strong>Total agregado:</strong> <span id="totalAgregado"></span></p>
+  <div class="preview-header" id="previewHeader">
+    <h3>Vista Previa a PDF</h3>
+    <span class="preview-toggle">▼</span>
+  </div>
+  <div class="preview-content" id="previewContent">
+    <p><strong>Ubicación:</strong> <span id="ubicacion"></span></p>
+    <div id="previewList"></div>
+    <p><strong>Total agregado:</strong> <span id="totalAgregado"></span></p>
+  </div>
 </div>
 
 <script>
@@ -522,7 +644,7 @@ document.addEventListener("DOMContentLoaded", () => {
         listEl.appendChild(card);
       });
 
-      previewEl.style.display = "block";
+      previewEl.classList.add("show");
     } catch (err) {
       console.error(err);
       alert("No se pudo generar la vista previa.");
