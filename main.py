@@ -182,8 +182,47 @@ def eliminar_arrendatario(arrendatario_id: int):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error eliminando arrendatario: {e}")
 
+#Json Reutilizable para preview y Generacion PDF 
+def build_preview(WaterValue : int, LuzValue : int, AseoValue : int, GasValue: int, Seleccionador : str) -> dict:
+    rsta : obtener_arrendatario(Seleccionador)
+    arrendtario_data = rsta["data"]  # lista de dicts
+    cantidad_arrendatarios = len(arrendtario_data)
 
+    prev_itms = []
+    suma_total = 0
 
+    for arr in arrendtario_data: 
+        nombre_arrendatario = arr["nombre_arrendatario"]
+        nombre_ubicacion = arr["nombre_ubicacion"]
+        direccion_ubicacion = arr["direccion_ubicacion"] 
+        personas_por_arrendatario = int(arr.get("personas_por_arrendatario") or 1)
+
+        PrecioAgua, PrecioLuz, PrecioAseo, PrecioGas = calcular_servicios(
+            WaterValue, LuzValue,AseoValue, GasValue,
+              personas_por_arrendatario,nombre_ubicacion, cantidad_arrendatarios)
+
+        total = PrecioAgua + PrecioLuz + PrecioAseo + PrecioGas
+        suma_total += total 
+        prev_itms.append({
+            "nombre_arrendatario": nombre_arrendatario,
+            "nombre_ubicacion": nombre_ubicacion,
+            "direccion_ubicacion": direccion_ubicacion,
+            "personas_por_arrendatario": personas_por_arrendatario,
+            "servicios": {
+                "agua": round(PrecioAgua, 2),
+                "luz": round(PrecioLuz, 2),
+                "aseo": round(PrecioAseo, 2),
+                "gas": round(PrecioGas, 2)
+            },
+            "total": total
+        })
+
+        return {
+            "ubicacion" : Seleccionador,
+             "arrendatarios" : prev_itms,
+             "sum_total"  : suma_total
+        }
+        
 @app.post("/GenerarComprobantes/")
 def generar_comprobante_end_point(
     WaterValue: int = Form(...),
