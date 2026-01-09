@@ -366,6 +366,17 @@
       border: 1px solid #ccc;
       border-radius: 5px;
     }
+
+  .previewoutput
+  {
+    display: none;
+  }
+  .previewoutput {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 12px;
+  background: #f7f7f7;
+}
   </style>
 </head>
 <body>
@@ -460,6 +471,16 @@
 
     
   </script>-->
-  
+<div id="previewoutput" class="previewoutput">
+  <h3>Vista Previa a PDF</h3>
+<p> <strong> Ubicación: </strong> <span id="ubicacion"></span> </p>
+<p> Responsable de Pago: <span id="Persona"></span></p>
+<p> Luz : <span id="luz"></span></p>
+<p> Agua :<span id="agua"></span></p>
+<p> Gas : <span id="gas"></span></p>
+<p> Aseo : <span id="aseo"></span></p>
+<p> <strong> Total : </strong> <span id="total"></span> </p>
+</div>
+
 </body>
 </html>
