@@ -184,8 +184,8 @@ def eliminar_arrendatario(arrendatario_id: int):
 
 #Json Reutilizable para preview y Generacion PDF 
 def build_preview(WaterValue : int, LuzValue : int, AseoValue : int, GasValue: int, Seleccionador : str) -> dict:
-    rsta : obtener_arrendatario(Seleccionador)
-    arrendtario_data = rsta["data"]  # lista de dicts
+    respuesta = obtener_arrendatario(Seleccionador)
+    arrendtario_data = respuesta["data"]  # lista de dicts
     cantidad_arrendatarios = len(arrendtario_data)
 
     prev_itms = []
@@ -217,12 +217,25 @@ def build_preview(WaterValue : int, LuzValue : int, AseoValue : int, GasValue: i
             "total": total
         })
 
-        return {
+    return {
             "ubicacion" : Seleccionador,
              "arrendatarios" : prev_itms,
              "sum_total"  : suma_total
         }
         
+
+@app.post("/PreviewComprobantes/")
+def preview_comprobante_end_point(
+    WaterValue: int = Form(...),
+    LuzValue: int = Form(...),
+    AseoValue: int = Form(...),
+    GasValue: int = Form(...),
+    Selecionador: str = Form(...)
+):
+
+    data = build_preview(WaterValue, LuzValue, AseoValue, GasValue, Selecionador)
+    return JSONResponse(content=data) 
+
 @app.post("/GenerarComprobantes/")
 def generar_comprobante_end_point(
     WaterValue: int = Form(...),
@@ -237,27 +250,24 @@ def generar_comprobante_end_point(
     zip_filename = f'comprobantes_{datetime.now().strftime("%Y%m%d_%H%M%S")}.zip'
     zip_path = os.path.join(temp, zip_filename)
     archivos = []
-    respuesta = obtener_arrendatario(Selecionador)
-    arrendatario_data = respuesta["data"]  # lista de dicts
 
-    # asegurar que las cantidades son int y evitar None
-    headcounttotales_por_arr = sum(int(arr.get("personas_por_arrendatario") or 1) for arr in arrendatario_data)
-    cantidad_arrendatarios = len(arrendatario_data)
+    preview = build_preview(WaterValue, LuzValue, AseoValue, GasValue, Selecionador)
 
-    for arrendatario in arrendatario_data:
-        nombre_arrendatario = arrendatario["nombre_arrendatario"]
-        nombre_ubicacion = arrendatario["nombre_ubicacion"]
-        direccion_ubicacion = arrendatario["direccion_ubicacion"]
-        personas_por_arrendatario = int(arrendatario.get("personas_por_arrendatario") or 1)
 
-        PrecioAgua, PrecioLuz, PrecioAseo, PrecioGas = calcular_servicios(
-            WaterValue, LuzValue, AseoValue, GasValue,
-            personas_por_arrendatario, nombre_ubicacion, cantidad_arrendatarios
-        )
+    for entry in preview["arrendatarios"]:
+        nombre_arrendatario = entry["nombre_arrendatario"]
+        nombre_ubicacion = entry["nombre_ubicacion"]
+        direccion_ubicacion = entry["direccion_ubicacion"]
+        personas_por_arrendatario = int(entry.get("personas_por_arrendatario") or 1)
+        servicios = entry["servicios"]
+
 
         # pedir al generador que escriba el PDF dentro del directorio temporal y devuelva la ruta
         pdf_path = GenerarComprobantes(
-            WaterValue=PrecioAgua, LuzValue=PrecioLuz, AseoValue=PrecioAseo, GasValue=PrecioGas,
+            WaterValue=servicios["agua"],
+            LuzValue=servicios["luz"],
+            AseoValue=servicios["aseo"],
+            GasValue=servicios["gas"],
             nombre_arrendatario=nombre_arrendatario,
             nombre_ubicacion=nombre_ubicacion,
             direccion_ubicacion=direccion_ubicacion,

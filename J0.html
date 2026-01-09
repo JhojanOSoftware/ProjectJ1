@@ -450,37 +450,86 @@
   </div>
 </button>
   </form>
-<!-- <script>
-    const waterInput = document.getElementById('WaterValue');
-    const lightInput = document.getElementById('LuzValue');
-    const gasInput = document.getElementById('GasValue');
-    const aseoInput = document.getElementById('AseoValue');
-    const mensaje = document.getElementById('mensaje');
-    const buttonGenerar = document.getElementById('buttonGenerar');
 
-    buttonGenerar.addEventListener('click', () => {
-      const concat = 
-        "Agua: " + waterInput.value + " | " +
-        "Luz: " + lightInput.value + " | " +
-        "Gas: " + gasInput.value + " | " +
-        "Aseo: " + aseoInput.value;
 
-      mensaje.textContent = concat;
-      console.log(concat);
-    });
-
-    
-  </script>-->
 <div id="previewoutput" class="previewoutput">
   <h3>Vista Previa a PDF</h3>
-<p> <strong> Ubicación: </strong> <span id="ubicacion"></span> </p>
-<p> Responsable de Pago: <span id="Persona"></span></p>
-<p> Luz : <span id="luz"></span></p>
-<p> Agua :<span id="agua"></span></p>
-<p> Gas : <span id="gas"></span></p>
-<p> Aseo : <span id="aseo"></span></p>
-<p> <strong> Total : </strong> <span id="total"></span> </p>
+  <p><strong>Ubicación:</strong> <span id="ubicacion"></span></p>
+  <div id="previewList"></div>
+  <p><strong>Total agregado:</strong> <span id="totalAgregado"></span></p>
 </div>
+
+<script>
+// ...existing code...
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.querySelector("form");
+  const buttonPreview = document.getElementById("buttonPreview");
+  const previewEl = document.getElementById("previewoutput");
+  const ubicacionEl = document.getElementById("ubicacion");
+  const listEl = document.getElementById("previewList");
+  const totalAgregadoEl = document.getElementById("totalAgregado");
+
+  const getFormValues = () => ({
+    WaterValue: document.getElementById("WaterValue").value || 0,
+    LuzValue: document.getElementById("LuzValue").value || 0,
+    GasValue: document.getElementById("GasValue").value || 0,
+    AseoValue: document.getElementById("AseoValue").value || 0,
+    Selecionador: document.getElementById("opciones").value
+  });
+
+  buttonPreview.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const values = getFormValues();
+    const formData = new FormData();
+    formData.append("WaterValue", values.WaterValue);
+    formData.append("LuzValue", values.LuzValue);
+    formData.append("GasValue", values.GasValue);
+    formData.append("AseoValue", values.AseoValue);
+    formData.append("Selecionador", values.Selecionador);
+
+    try {
+      const res = await fetch("/PreviewComprobantes/", {
+        method: "POST",
+        body: formData
+      });
+      if (!res.ok) {
+        throw new Error("Error en preview");
+      }
+      const data = await res.json();
+
+      // Render del preview
+      ubicacionEl.textContent = data.ubicacion;
+      totalAgregadoEl.textContent = `$ ${data.sum_total.toFixed(2)}`;
+
+      // Lista por arrendatario
+      listEl.innerHTML = "";
+      data.arrendatarios.forEach((a) => {
+        const card = document.createElement("div");
+        card.style.padding = "10px";
+        card.style.marginBottom = "10px";
+        card.style.border = "1px solid #ddd";
+        card.style.borderRadius = "8px";
+        card.innerHTML = `
+          <p><strong>${a.nombre_arrendatario}</strong> (${a.personas_por_arrendatario} persona(s))</p>
+          <p>Dirección: ${a.direccion_ubicacion}</p>
+          <p>Luz: $ ${a.servicios.luz.toFixed(2)}</p>
+          <p>Agua: $ ${a.servicios.agua.toFixed(2)}</p>
+          <p>Gas: $ ${a.servicios.gas.toFixed(2)}</p>
+          <p>Aseo: $ ${a.servicios.aseo.toFixed(2)}</p>
+          <p><strong>Total:</strong> $ ${a.total.toFixed(2)}</p>
+        `;
+        listEl.appendChild(card);
+      });
+
+      previewEl.style.display = "block";
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo generar la vista previa.");
+    }
+  });
+});
+</script>
 
 </body>
 </html>
