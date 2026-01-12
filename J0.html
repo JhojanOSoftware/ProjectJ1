@@ -581,8 +581,46 @@
   </div>
 </div>
 
+<div id="listar_arrendatarios" style="max-height:600px; overflow-y:auto; display:grid; gap:12px; width:100%; max-width:500px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.2); padding: 20px; margin-top: 20px;"></div>
 <script>
-// ...existing code...
+// Cargar y mostrar arrendatarios en cards
+async function cargarArrendatarios() {
+  try {
+    const respuesta = await fetch("/Arrendatarios/");
+    if (!respuesta.ok) {
+      throw new Error(`Error al obtener los arrendatarios: ${respuesta.status}`);
+    }
+    const data = await respuesta.json();
+    const items = data.data || [];
+    console.log(items); // Para verificar en consola
+    
+    // Renderizar como cards similar al preview
+    const container = document.getElementById("listar_arrendatarios");
+    if (items.length === 0) {
+      container.innerHTML = "<p style='text-align:center; color:#999;'>No hay arrendatarios registrados</p>";
+      return;
+    }
+    
+    container.innerHTML = items.map(a => `
+      <div style="border:1px solid #e0e0e0; border-radius:8px; padding:12px; background:#f9f9f9; transition: all 0.2s ease;">
+        <p style="margin:8px 0;"><strong style="color:#667eea;">Nombre:</strong> ${a.nombre_arrendatario}</p>
+        <p style="margin:8px 0;"><strong style="color:#667eea;">Ubicación:</strong> ${a.nombre_ubicacion}</p>
+        <p style="margin:8px 0;"><strong style="color:#667eea;">Dirección:</strong> ${a.direccion_ubicacion}</p>
+        <p style="margin:8px 0;"><strong style="color:#667eea;">Personas:</strong> ${a.personas_por_arrendatario ?? "-"}</p>
+        <p style="margin:8px 0;"><strong style="color:#667eea;">Tel:</strong> ${a.telefono ?? "-"}</p>
+        <p style="margin:8px 0;"><strong style="color:#667eea;">Email:</strong> ${a.email ?? "-"}</p>
+        <button onclick="editarArr(${a.id})"  style="margin-top:10px; width:auto; padding:8px 16px;">Editar</button>
+      </div>
+    `).join("");
+  } catch (error) {
+    console.error("Error en la solicitud GET:", error);
+    document.getElementById("listar_arrendatarios").innerHTML = `<p style="color:red;">Error al cargar los datos</p>`;
+  }
+}
+
+document.getElementById("buttonModifyDB").addEventListener("click", cargarArrendatarios);
+
+
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("form");
   const buttonPreview = document.getElementById("buttonPreview");

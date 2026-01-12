@@ -162,7 +162,25 @@ def obtener_arrendatario(nombre_ubicacion: str):
         raise HTTPException(status_code=500, detail=f"Error obteniendo arrendatarios: {e}")
 
 
-
+@app.put("/api/v1/update_data_db/")
+def actualizar_arrendatario(arrendatario_id: int, Arrendatario: Arrendatario):
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE arrendatarios_J0 
+            SET nombre_arrendatario = ?, nombre_ubicacion = ?, direccion_ubicacion = ?, personas_por_arrendatario = ?, telefono = ?, email = ?
+            WHERE id = ?
+            """,
+            (Arrendatario.nombre_arrendatario, Arrendatario.nombre_ubicacion, Arrendatario.direccion_ubicacion, Arrendatario.personas_por_arrendatario, Arrendatario.telefono, Arrendatario.email, arrendatario_id)
+        )
+        conn.commit()
+        conn.close()
+        return {"message": "Arrendatario actualizado correctamente"}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error actualizando arrendatario: {e}")
 
 @app.delete("/Arrendatarios/{arrendatario_id}")
 def eliminar_arrendatario(arrendatario_id: int):
@@ -235,6 +253,7 @@ def preview_comprobante_end_point(
 
     data = build_preview(WaterValue, LuzValue, AseoValue, GasValue, Selecionador)
     return JSONResponse(content=data) 
+
 
 @app.post("/GenerarComprobantes/")
 def generar_comprobante_end_point(
