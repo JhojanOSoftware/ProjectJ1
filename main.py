@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 limiter = Limiter(key_func=get_remote_address)
-from models.ClaseArrendatario import Arrendatario
+from models.ClaseArrendatario import Arrendatario, ArrendatarioUpdate
 from  recexamples import *
 from fastapi.responses import FileResponse
 import tempfile
@@ -163,17 +163,23 @@ def obtener_arrendatario(nombre_ubicacion: str):
 
 
 @app.put("/api/v1/update_data_db/")
-def actualizar_arrendatario(arrendatario_id: int, Arrendatario: Arrendatario):
+def actualizar_arrendatario(arrendatario_id: int, datos: ArrendatarioUpdate):
     try:
         conn = get_conn()
         cursor = conn.cursor()
+        cursor.execute ('SELECT * FROM arrendatarios_J0 WHERE id = ?', (arrendatario_id,))
+        exists= cursor.fetchone()
+
+        if not exists:
+            raise HTTPException(status_code=404, detail="Arrendatario no encontrado")
+        
         cursor.execute(
             """
             UPDATE arrendatarios_J0 
             SET nombre_arrendatario = ?, nombre_ubicacion = ?, direccion_ubicacion = ?, personas_por_arrendatario = ?, telefono = ?, email = ?
             WHERE id = ?
             """,
-            (Arrendatario.nombre_arrendatario, Arrendatario.nombre_ubicacion, Arrendatario.direccion_ubicacion, Arrendatario.personas_por_arrendatario, Arrendatario.telefono, Arrendatario.email, arrendatario_id)
+            (datos.nombre_arrendatario, datos.nombre_ubicacion, datos.direccion_ubicacion, datos.personas_por_arrendatario, datos.telefono, datos.email, arrendatario_id)
         )
         conn.commit()
         conn.close()

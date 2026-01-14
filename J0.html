@@ -11,24 +11,59 @@
 
     body {
       font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr;
       min-height: 100vh;
-      padding: 15px;
       gap: 20px;
+      padding: 20px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+    }
+
+    /* Scrollbar personalizado */
+    body::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    body::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.1);
+      border-radius: 10px;
+    }
+
+    body::-webkit-scrollbar-thumb {
+      background: #667eea;
+      border-radius: 10px;
+    }
+
+    body::-webkit-scrollbar-thumb:hover {
+      background: #764ba2;
     }
 
     form {
       background-color: white;
       padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 400px;
+      min-width: 400px;
+      max-width: 450px;
       flex-shrink: 0;
+      height: fit-content;
+      animation: slideInLeft 0.5s ease-out;
+      border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
 
     h2 {
@@ -402,12 +437,27 @@
       display: none;
       flex-direction: column;
       width: 100%;
-      max-width: 500px;
+      min-width: 400px;
+      max-width: 450px;
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
       overflow: hidden;
       transition: all 0.3s ease;
+      flex-shrink: 0;
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      animation: slideInUp 0.5s ease-out;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .previewoutput.show {
@@ -424,6 +474,10 @@
       cursor: pointer;
       user-select: none;
       transition: background 0.3s ease;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.95rem;
     }
 
     .preview-header:hover {
@@ -559,14 +613,242 @@
       scale: 0.98;
       filter: brightness(0.9);
     }
-  </style>
+
+    /* ========== ESTILOS ADICIONALES PARA LAYOUT HORIZONTAL ========== */
+
+    /* Títulos mejorados */
+    h2 {
+      text-align: center;
+      color: #333;
+      margin: 0 0 15px 0;
+      font-size: 1.3rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Separación visual de paneles */
+    form::before {
+      content: "📋 FORMULARIO";
+      display: block;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #667eea;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+    }
+
+    .previewoutput::before {
+      content: "👁️ VISTA PREVIA";
+      display: block;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #667eea;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      padding: 10px 0 0 0;
+    }
+
+    #listar_arrendatarios::before {
+      content: "🗂️ BASE DE DATOS";
+      display: block;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #667eea;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      grid-column: 1 / -1;
+    }
+
+    /* Input y select mejorados */
+    input, select {
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3) !important;
+    }
+
+    /* Display fields mejorados */
+    .display-field {
+      background: linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%);
+      border: 1px solid rgba(102, 126, 234, 0.3) !important;
+      transition: all 0.3s ease;
+    }
+
+    .display-field:hover {
+      border-color: #667eea !important;
+      background: linear-gradient(135deg, #f0f2ff 0%, #e8ebff 100%);
+    }
+
+    /* Contenedor de edición inline mejorado */
+    #containerEditarArrendatario {
+      background: linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%) !important;
+      border-left: 4px solid #667eea !important;
+    }
+
+    /* Efecto de modal para edición */
+    #containerEditarArrendatario::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      border-radius: 2px;
+    }
+
+    /* Botones con mejor espaciado */
+    .btn {
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Mejora visual para cards en BD */
+    #listar_arrendatarios > div {
+      border: 1px solid rgba(102, 126, 234, 0.2) !important;
+      background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%) !important;
+    }
+
+    #listar_arrendatarios > div:hover {
+      border-color: #667eea !important;
+      background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%) !important;
+    }
+
+    /* Etiquetas con mejor contraste */
+    label {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+    }
+
+    /* Responsive mejorado */
+    @media (max-width: 1400px) {
+      form, .previewoutput, #listar_arrendatarios {
+        min-width: 85vw;
+        max-width: 85vw;
+      }
+    }
+
+    @media (max-width: 900px) {
+      h2 {
+        font-size: 1.1rem;
+      }
+
+      form, .previewoutput, #listar_arrendatarios {
+        padding: 15px;
+      }
+
+      label {
+        font-size: 0.9rem;
+      }
+    }
 </head>
 <body>
 
     <form action="/GenerarComprobantes/" method="post">
-    <h2>Registro de Servicios y Precios
-    </h2>
-     <h2 id="mensaje">Mensaje</h2>
+    <h2 id="formTitle">Registro de Servicios y Precios</h2>
+    <h2 id="mensaje">Mensaje</h2>
+    
+    <!-- CONTENEDOR DE EDICIÓN INLINE -->
+    <div id="containerEditarArrendatario" style="display:none; border: 2px solid #667eea; padding: 20px; border-radius: 10px; background: #f0f2ff; margin-bottom: 20px;">
+      
+      <input type="hidden" id="arrendatario_id">
+      
+      <!-- Campo: Nombre -->
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom: 5px; font-weight:bold; color:#333;">Nombre del Arrendatario:</label>
+        <div id="display_nombre" class="display-field">-</div>
+        <input type="text" id="input_nombre" class="edit-field" style="display:none; width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="Nombre">
+      </div>
+
+      <!-- Campo: Ubicación -->
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom: 5px; font-weight:bold; color:#333;">Ubicación:</label>
+        <div id="display_ubicacion" class="display-field">-</div>
+        <input type="text" id="input_ubicacion" class="edit-field" style="display:none; width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="Ubicación">
+      </div>
+
+      <!-- Campo: Dirección -->
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom: 5px; font-weight:bold; color:#333;">Dirección:</label>
+        <div id="display_direccion" class="display-field">-</div>
+        <input type="text" id="input_direccion" class="edit-field" style="display:none; width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="Dirección">
+      </div>
+
+      <!-- Campo: Personas -->
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom: 5px; font-weight:bold; color:#333;">Personas en el Apartamento:</label>
+        <div id="display_personas" class="display-field">-</div>
+        <input type="number" id="input_personas" class="edit-field" style="display:none; width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" min="1" placeholder="Número de personas">
+      </div>
+
+      <!-- Campo: Teléfono -->
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom: 5px; font-weight:bold; color:#333;">Teléfono:</label>
+        <div id="display_telefono" class="display-field">-</div>
+        <input type="text" id="input_telefono" class="edit-field" style="display:none; width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="Teléfono">
+      </div>
+
+      <!-- Campo: Email -->
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom: 5px; font-weight:bold; color:#333;">Email:</label>
+        <div id="display_email" class="display-field">-</div>
+        <input type="email" id="input_email" class="edit-field" style="display:none; width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="Email">
+      </div>
+
+      <!-- Botones de acción -->
+      <div style="display:flex; gap:10px;">
+        <button type="button" id="btnEditarInline" class="btn" style="flex:1;">
+          <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
+          </svg>
+          <div class="txt-wrapper">
+            <div class="txt-1">
+              <span class="btn-letter">E</span><span class="btn-letter">d</span><span class="btn-letter">i</span><span class="btn-letter">t</span><span class="btn-letter">a</span><span class="btn-letter">r</span>
+            </div>
+          </div>
+        </button>
+        
+        <button type="button" id="btnGuardarInline" class="btn" style="flex:1; display:none;">
+          <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M15,9H5V5H15M12,19A7,7 0 0,1 5,12A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M16.31,16.31L13.9,13.9A4,4 0 0,0 12,14A4,4 0 0,1 8,10A4,4 0 0,1 12,6A4,4 0 0,1 16,10A4,4 0 0,0 14.9,13.9L16.31,15.31V16.31Z" />
+          </svg>
+          <div class="txt-wrapper">
+            <div class="txt-1">
+              <span class="btn-letter">G</span><span class="btn-letter">u</span><span class="btn-letter">a</span><span class="btn-letter">r</span><span class="btn-letter">d</span><span class="btn-letter">a</span><span class="btn-letter">r</span>
+            </div>
+          </div>
+        </button>
+        
+        <button type="button" id="btnCancelarInline" class="btn" style="flex:1; display:none;">
+          <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+          </svg>
+          <div class="txt-wrapper">
+            <div class="txt-1">
+              <span class="btn-letter">C</span><span class="btn-letter">a</span><span class="btn-letter">n</span><span class="btn-letter">c</span><span class="btn-letter">e</span><span class="btn-letter">l</span><span class="btn-letter">a</span><span class="btn-letter">r</span>
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Resto del formulario para servicios -->
     <label for="WaterValue">Precio Agua:</label>
     <input type="number" id="WaterValue" name="WaterValue" >
 
@@ -646,7 +928,107 @@
   </div>
 </div>
 
-<div id="listar_arrendatarios" style="max-height:600px; overflow-y:auto; display:grid; gap:12px; width:100%; max-width:500px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.2); padding: 20px; margin-top: 20px;"></div>
+<div id="listar_arrendatarios" style="max-height:100vh; overflow-y:auto; display:grid; gap:12px; width:100%; min-width:400px; max-width:450px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); padding: 20px; flex-shrink: 0; border: 1px solid rgba(102, 126, 234, 0.2); animation: slideInRight 0.5s ease-out;"></div>
+
+<style>
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Scrollbar para el contenedor de arrendatarios */
+  #listar_arrendatarios::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #listar_arrendatarios::-webkit-scrollbar-track {
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 10px;
+  }
+
+  #listar_arrendatarios::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 10px;
+  }
+
+  #listar_arrendatarios::-webkit-scrollbar-thumb:hover {
+    background: #764ba2;
+  }
+
+  /* Responsive: Para pantallas menores a 1400px */
+  @media (max-width: 1400px) {
+    body {
+      grid-template-columns: 1fr;
+      overflow-x: auto;
+    }
+
+    form, .previewoutput, #listar_arrendatarios {
+      min-width: 90vw;
+    }
+  }
+
+  /* Responsive: Para tablets */
+  @media (max-width: 900px) {
+    body {
+      grid-template-columns: 1fr;
+      gap: 15px;
+      padding: 15px;
+    }
+
+    form, .previewoutput, #listar_arrendatarios {
+      min-width: 100%;
+      max-width: 100%;
+    }
+  }
+
+  /* Mejora visual para el contenedor de edición inline */
+  #containerEditarArrendatario {
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15) !important;
+    border-color: #667eea !important;
+    animation: slideDown 0.4s ease-out;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+      max-height: 0;
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      max-height: 1000px;
+    }
+  }
+
+  /* Cards de arrendatarios mejoradas */
+  #listar_arrendatarios > div {
+    animation: fadeInScale 0.3s ease-out;
+    transition: all 0.3s ease;
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  #listar_arrendatarios > div:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.2) !important;
+  }
+</style>
 <script>
   let global_a = [];
 function editarArr(id) {
@@ -657,11 +1039,120 @@ function editarArr(id) {
 }
   // 3. Mostrar en consola (para verificar)
   console.log(" Arrendatario seleccionado:", arrendatario);
-
-
+  idedited = id;
+  document.getElementById("arrendatario_id").value = id;
   
-  return arrendatario;
+
+  // Prellenar los display fields (textos)
+  document.getElementById("display_nombre").textContent = arrendatario.nombre_arrendatario;
+  document.getElementById("display_ubicacion").textContent = arrendatario.nombre_ubicacion;
+  document.getElementById("display_direccion").textContent = arrendatario.direccion_ubicacion;
+  document.getElementById("display_personas").textContent = arrendatario.personas_por_arrendatario || "-";
+  document.getElementById("display_telefono").textContent = arrendatario.telefono || "-";
+  document.getElementById("display_email").textContent = arrendatario.email || "-";
+
+  // Prellenar los inputs (ocultos por ahora)
+  document.getElementById("input_nombre").value = arrendatario.nombre_arrendatario;
+  document.getElementById("input_ubicacion").value = arrendatario.nombre_ubicacion;
+  document.getElementById("input_direccion").value = arrendatario.direccion_ubicacion;
+  document.getElementById("input_personas").value = arrendatario.personas_por_arrendatario;
+  document.getElementById("input_telefono").value = arrendatario.telefono || "";
+  document.getElementById("input_email").value = arrendatario.email || "";
+
+  document.getElementById("containerEditarArrendatario").style.display = "block";
+  document.getElementById("formTitle").textContent = "Editar Arrendatario";
 }
+
+function edit_mod_activated(){
+  modoEdicionInline = true;
+
+  document.querySelectorAll(".display-field").forEach(el => {
+    el.style.display = "none";
+  });
+
+  document.querySelectorAll(".edit-field").forEach(el => {
+    el.style.display = "block";0
+  });
+  // Cambiar botones
+  document.getElementById("btnEditarInline").style.display = "none";
+  document.getElementById("btnGuardarInline").style.display = "block";
+  document.getElementById("btnCancelarInline").style.display = "block";
+  console.log("Modo edición inline ");
+
+}
+
+function cancel_edit_mod(){
+  modoEdicionInline = false;
+
+  document.querySelectorAll(".display-field").forEach(el => {
+    el.style.display = "block";
+  });
+
+  document.querySelectorAll(".edit-field").forEach(el => {
+    el.style.display = "none";
+  });
+  // Cambiar botones
+  document.getElementById("btnEditarInline").style.display = "block";
+  document.getElementById("btnGuardarInline").style.display = "none";
+  document.getElementById("btnCancelarInline").style.display = "none";
+  console.log("Canceló edición inline ");
+}
+async function changes_save_inline (){
+const id = document.getElementById("arrendatario_id").value;
+
+  const datosActualizados = {
+    nombre_arrendatario: document.getElementById("input_nombre").value,
+    nombre_ubicacion: document.getElementById("input_ubicacion").value,
+    direccion_ubicacion: document.getElementById("input_direccion").value,
+    personas_por_arrendatario: parseInt(document.getElementById("input_personas").value),
+    telefono: document.getElementById("input_telefono").value,
+    email: document.getElementById("input_email").value
+  };
+
+  console.log(" Enviando datos actualizados:", datosActualizados);
+
+  try {
+    const res = await fetch(`/api/v1/update_data_db/?arrendatario_id=${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datosActualizados)
+    });
+
+    if (!res.ok) {
+      throw new Error(`Error ${res.status}: No se pudo actualizar`);
+    }
+
+    const respuesta = await res.json();
+    console.log("Actualizado correctamente:", respuesta);
+
+    alert(" Arrendatario actualizado correctamente!");
+
+    // Actualizar display fields con los nuevos valores
+    document.getElementById("display_nombre").textContent = datosActualizados.nombre_arrendatario;
+    document.getElementById("display_ubicacion").textContent = datosActualizados.nombre_ubicacion;
+    document.getElementById("display_direccion").textContent = datosActualizados.direccion_ubicacion;
+    document.getElementById("display_personas").textContent = datosActualizados.personas_por_arrendatario;
+    document.getElementById("display_telefono").textContent = datosActualizados.telefono || "-";
+    document.getElementById("display_email").textContent = datosActualizados.email || "-";
+
+    // Volver a modo lectura
+    cancel_edit_mod();
+
+    // Recargar la lista de cards
+    cargarArrendatarios();
+
+  } catch (error) {
+    console.error(" Error al guardar:", error);
+    alert(" Error: " + error.message);
+  }
+}
+
+// Event listeners
+document.getElementById("btnEditarInline").addEventListener("click", edit_mod_activated);
+document.getElementById("btnGuardarInline").addEventListener("click", changes_save_inline);
+document.getElementById("btnCancelarInline").addEventListener("click", cancel_edit_mod);
+
+
 // Cargar y mostrar arrendatarios en cards
 async function cargarArrendatarios() {
   try {

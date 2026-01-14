@@ -1,6 +1,14 @@
 from typing import Optional, Annotated
 from pydantic import BaseModel, Field, validator
 
+class ArrendatarioUpdate(BaseModel):
+    nombre_arrendatario: str
+    nombre_ubicacion: str 
+    direccion_ubicacion: str
+    personas_por_arrendatario: int 
+    telefono: Optional[str] = None
+    email: Optional[str] = None
+
 
 class Arrendatario(BaseModel):
     id: Optional[int] = Field(None, description="ID del arrendatario (autogenerado)")
