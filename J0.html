@@ -10,90 +10,95 @@
     }
 
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      grid-template-rows: 1fr;
+      gap: 25px;
       min-height: 100vh;
-      gap: 20px;
-      padding: 20px;
+      padding: 30px;
       overflow-x: auto;
       scroll-behavior: smooth;
     }
 
-    /* Scrollbar personalizado */
+    /* Scrollbar styling */
     body::-webkit-scrollbar {
       height: 8px;
     }
 
     body::-webkit-scrollbar-track {
-      background: rgba(0,0,0,0.1);
-      border-radius: 10px;
+      background: transparent;
     }
 
     body::-webkit-scrollbar-thumb {
       background: #667eea;
-      border-radius: 10px;
+      border-radius: 4px;
     }
 
     body::-webkit-scrollbar-thumb:hover {
-      background: #764ba2;
+      background: #5568d3;
     }
 
+    /* COLUMNA 1: FORMULARIO PRINCIPAL */
     form {
       background-color: white;
-      padding: 25px;
-      border-radius: 15px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
       width: 100%;
-      min-width: 400px;
-      max-width: 450px;
-      flex-shrink: 0;
+      min-width: 450px;
       height: fit-content;
-      animation: slideInLeft 0.5s ease-out;
-      border: 1px solid rgba(102, 126, 234, 0.2);
+      position: sticky;
+      top: 30px;
+      grid-column: 1;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border: 2px solid transparent;
     }
 
-    @keyframes slideInLeft {
-      from {
-        opacity: 0;
-        transform: translateX(-50px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
+    form:hover {
+      box-shadow: 0 15px 50px rgba(102, 126, 234, 0.15);
+      border-color: rgba(102, 126, 234, 0.1);
     }
 
     h2 {
       text-align: center;
-      color: #333;
-      margin: 0 0 15px 0;
+      color: #1a1a2e;
+      margin: 0 0 20px 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
     }
 
     label {
       display: block;
-      margin-top: 10px;
-      font-weight: bold;
-      color: #333;
-      font-size: 0.95rem;
+      margin-top: 15px;
+      font-weight: 600;
+      color: #2c3e50;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     input {
       width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1rem;
-      transition: border-color 0.2s;
+      padding: 12px 15px;
+      margin-top: 8px;
+      border: 2px solid #e8eaed;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      background-color: #f8f9fa;
+    }
+
+    input:hover {
+      border-color: #d0d5dd;
     }
 
     input:focus {
       outline: none;
-      border-color: #007bff;
-      box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
+      border-color: #667eea;
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 .btn {
   --border-radius: 24px;
@@ -108,24 +113,22 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0.7em 1.2em;
+  padding: 0.8em 1.4em;
   font-family: "Poppins", "Inter", "Segoe UI", sans-serif;
-  font-size: 1em;
+  font-size: 0.95em;
   font-weight: 600;
   width: 100%;
   box-sizing: border-box;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 
   background-color: var(--button-color);
-
   box-shadow:
-    /* inset */
     inset 0px 1px 1px rgba(255, 255, 255, 0.2),
     inset 0px 2px 2px rgba(255, 255, 255, 0.15),
     inset 0px 4px 4px rgba(255, 255, 255, 0.1),
     inset 0px 8px 8px rgba(255, 255, 255, 0.05),
     inset 0px 16px 16px rgba(255, 255, 255, 0.05),
-    /* drop */ 0px -1px 1px rgba(0, 0, 0, 0.02),
+    0px -1px 1px rgba(0, 0, 0, 0.02),
     0px -2px 2px rgba(0, 0, 0, 0.03),
     0px -4px 4px rgba(0, 0, 0, 0.05),
     0px -8px 8px rgba(0, 0, 0, 0.06),
@@ -134,11 +137,11 @@
   border: solid 1px #fff2;
   border-radius: var(--border-radius);
   cursor: pointer;
-
   transition:
     box-shadow var(--transition),
     border var(--transition),
-    background-color var(--transition);
+    background-color var(--transition),
+    transform 0.2s ease;
 }
 .btn::before {
   content: "";
@@ -418,41 +421,58 @@
     
     select {
       width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1rem;
-      transition: border-color 0.2s;
+      padding: 12px 15px;
+      margin-top: 8px;
+      border: 2px solid #e8eaed;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      background-color: #f8f9fa;
+      cursor: pointer;
+    }
+
+    select:hover {
+      border-color: #d0d5dd;
     }
 
     select:focus {
       outline: none;
-      border-color: #007bff;
-      box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
+      border-color: #667eea;
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 
-    /* Vista Previa Colapsable */
+    /* COLUMNA 2: VISTA PREVIA */
+    #previewoutput {
+      grid-column: 2;
+      width: 100%;
+      min-width: 450px;
+      height: fit-content;
+      position: sticky;
+      top: 30px;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
     .previewoutput {
       display: none;
       flex-direction: column;
-      width: 100%;
-      min-width: 400px;
-      max-width: 450px;
       background: white;
-      border-radius: 15px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
       overflow: hidden;
-      transition: all 0.3s ease;
-      flex-shrink: 0;
-      border: 1px solid rgba(102, 126, 234, 0.2);
       animation: slideInUp 0.5s ease-out;
+    }
+
+    .previewoutput.show {
+      display: flex;
     }
 
     @keyframes slideInUp {
       from {
         opacity: 0;
-        transform: translateY(50px);
+        transform: translateY(30px);
       }
       to {
         opacity: 1;
@@ -460,24 +480,16 @@
       }
     }
 
-    .previewoutput.show {
-      display: flex;
-    }
-
     .preview-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 20px;
+      padding: 20px 25px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       cursor: pointer;
       user-select: none;
-      transition: background 0.3s ease;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-size: 0.95rem;
+      transition: all 0.3s ease;
     }
 
     .preview-header:hover {
@@ -486,12 +498,13 @@
 
     .preview-header h3 {
       margin: 0;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       flex-grow: 1;
+      font-weight: 700;
     }
 
     .preview-toggle {
-      font-size: 0.9rem;
+      font-size: 1rem;
       transition: transform 0.3s ease;
       display: inline-block;
       margin-left: 10px;
@@ -502,69 +515,182 @@
     }
 
     .preview-content {
-      padding: 20px;
-      max-height: 500px;
+      padding: 25px;
+      max-height: 600px;
       overflow-y: auto;
       overflow-x: hidden;
-      transition: max-height 0.3s ease, opacity 0.3s ease;
-    }
-
-    .preview-content.collapsed {
-      max-height: 0;
-      overflow: hidden;
-      padding: 0 20px;
-      opacity: 0;
     }
 
     .preview-content p {
-      margin: 10px 0;
-      color: #333;
+      margin: 12px 0;
+      color: #2c3e50;
+      font-size: 0.95rem;
     }
 
     .preview-content p strong {
       color: #667eea;
+      font-weight: 700;
     }
 
     #previewList {
-      margin: 15px 0;
+      margin: 20px 0;
     }
 
     #previewList > div {
-      padding: 12px;
+      padding: 15px;
       margin-bottom: 12px;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      background: #f9f9f9;
-      transition: all 0.2s ease;
+      border: 1px solid #e8eaed;
+      border-radius: 10px;
+      background: #f8f9fa;
+      transition: all 0.3s ease;
     }
 
     #previewList > div:hover {
       border-color: #667eea;
-      background: #f5f7ff;
-      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+      background: #f0f4ff;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+      transform: translateY(-2px);
     }
 
     #previewList p {
-      margin: 6px 0;
+      margin: 8px 0;
+      font-size: 0.9rem;
+    }
+
+    /* COLUMNA 3: EDICIÓN DE BD */
+    #listar_arrendatarios {
+      grid-column: 3;
+      width: 100%;
+      min-width: 450px;
+      max-height: 700px;
+      overflow-y: auto;
+      display: grid;
+      gap: 15px;
+      padding: 0;
+      background: transparent;
+      border-radius: 0;
+      box-shadow: none;
+      animation: slideInRight 0.5s ease-out;
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    #listar_arrendatarios > div {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      border: 2px solid #e8eaed;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+    }
+
+    #listar_arrendatarios > div:hover {
+      border-color: #667eea;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+      transform: translateY(-4px);
+    }
+
+    #listar_arrendatarios > div p {
+      margin: 8px 0;
+      color: #2c3e50;
+      font-size: 0.9rem;
+    }
+
+    #listar_arrendatarios > div p strong {
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    /* CONTENEDOR EDICIÓN INLINE */
+    #containerEditarArrendatario {
+      grid-column: 3;
+      width: 100%;
+      min-width: 450px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(102, 126, 234, 0.2);
+      border: 2px solid #667eea;
+      padding: 25px;
+      margin: 0;
+      animation: modalFadeIn 0.4s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    #containerEditarArrendatario[style*="display: none"] {
+      display: none !important;
+    }
+
+    .display-field {
+      padding: 12px 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e8eaed;
+      color: #2c3e50;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .display-field:hover {
+      background: #f0f4ff;
+      border-color: #667eea;
+    }
+
+    .edit-field {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e8eaed;
+      border-radius: 8px;
       font-size: 0.95rem;
+      transition: all 0.3s ease;
+      background-color: #fff;
+    }
+
+    .edit-field:focus {
+      outline: none;
+      border-color: #667eea !important;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 
     /* Botón Bubbles para Editar */
     .bubbles {
       --c1: #fff;
       --c2: #212121;
-      --size-letter: 16px;
-      padding: 0.5em 1em;
+      --size-letter: 14px;
+      padding: 0.6em 1.1em;
       font-size: var(--size-letter);
-
       background-color: transparent;
       border: calc(var(--size-letter) / 6) solid var(--c2);
       border-radius: 0.2em;
       cursor: pointer;
-
       overflow: hidden;
       position: relative;
       transition: 300ms cubic-bezier(0.83, 0, 0.17, 1);
+      width: auto;
+      margin-top: 10px;
+      margin-bottom: 0;
     }
 
     .bubbles > .text {
@@ -592,10 +718,8 @@
       aspect-ratio: 1/1;
       scale: 0;
       transition: 1000ms cubic-bezier(0.76, 0, 0.24, 1);
-
       background-color: var(--c2);
       border-radius: 50%;
-
       position: absolute;
       translate: -50% -50%;
     }
@@ -614,149 +738,110 @@
       filter: brightness(0.9);
     }
 
-    /* ========== ESTILOS ADICIONALES PARA LAYOUT HORIZONTAL ========== */
-
-    /* Títulos mejorados */
-    h2 {
-      text-align: center;
-      color: #333;
-      margin: 0 0 15px 0;
-      font-size: 1.3rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    /* Separación visual de paneles */
-    form::before {
-      content: "📋 FORMULARIO";
-      display: block;
-      text-align: center;
-      font-size: 0.75rem;
-      color: #667eea;
-      font-weight: 600;
-      letter-spacing: 1px;
-      margin-bottom: 15px;
-      text-transform: uppercase;
-    }
-
-    .previewoutput::before {
-      content: "👁️ VISTA PREVIA";
-      display: block;
-      text-align: center;
-      font-size: 0.75rem;
-      color: #667eea;
-      font-weight: 600;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      padding: 10px 0 0 0;
-    }
-
-    #listar_arrendatarios::before {
-      content: "🗂️ BASE DE DATOS";
-      display: block;
-      text-align: center;
-      font-size: 0.75rem;
-      color: #667eea;
-      font-weight: 600;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      grid-column: 1 / -1;
-    }
-
-    /* Input y select mejorados */
-    input, select {
-      transition: all 0.3s ease;
-    }
-
-    input:focus, select:focus {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3) !important;
-    }
-
-    /* Display fields mejorados */
-    .display-field {
-      background: linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%);
-      border: 1px solid rgba(102, 126, 234, 0.3) !important;
-      transition: all 0.3s ease;
-    }
-
-    .display-field:hover {
-      border-color: #667eea !important;
-      background: linear-gradient(135deg, #f0f2ff 0%, #e8ebff 100%);
-    }
-
-    /* Contenedor de edición inline mejorado */
-    #containerEditarArrendatario {
-      background: linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%) !important;
-      border-left: 4px solid #667eea !important;
-    }
-
-    /* Efecto de modal para edición */
-    #containerEditarArrendatario::before {
-      content: "";
-      position: absolute;
-      top: -8px;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-      border-radius: 2px;
-    }
-
-    /* Botones con mejor espaciado */
-    .btn {
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-    }
-
-    /* Mejora visual para cards en BD */
-    #listar_arrendatarios > div {
-      border: 1px solid rgba(102, 126, 234, 0.2) !important;
-      background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%) !important;
-    }
-
-    #listar_arrendatarios > div:hover {
-      border-color: #667eea !important;
-      background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%) !important;
-    }
-
-    /* Etiquetas con mejor contraste */
-    label {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      font-weight: 700;
-    }
-
-    /* Responsive mejorado */
+    /* RESPONSIVE */
     @media (max-width: 1400px) {
-      form, .previewoutput, #listar_arrendatarios {
-        min-width: 85vw;
-        max-width: 85vw;
+      body {
+        grid-template-columns: 1fr;
+        overflow-x: visible;
+        overflow-y: auto;
+      }
+
+      form,
+      #previewoutput,
+      #listar_arrendatarios,
+      #containerEditarArrendatario {
+        grid-column: 1;
+        min-width: 100%;
+        position: static;
+      }
+
+      form {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      #previewoutput {
+        position: relative;
+        top: auto;
+      }
+
+      #listar_arrendatarios {
+        max-height: 600px;
+        margin-top: 20px;
+      }
+
+      #containerEditarArrendatario {
+        margin-top: 20px;
       }
     }
 
-    @media (max-width: 900px) {
-      h2 {
-        font-size: 1.1rem;
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+        gap: 15px;
       }
 
-      form, .previewoutput, #listar_arrendatarios {
-        padding: 15px;
+      form,
+      #previewoutput,
+      #listar_arrendatarios,
+      #containerEditarArrendatario {
+        min-width: 100%;
+      }
+
+      .preview-content {
+        max-height: 400px;
+      }
+
+      #listar_arrendatarios {
+        max-height: 500px;
+      }
+
+      h2 {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
       }
 
       label {
-        font-size: 0.9rem;
+        margin-top: 12px;
+        font-size: 0.85rem;
+      }
+
+      input,
+      select {
+        padding: 10px 12px;
+        font-size: 16px;
+      }
+
+      .btn {
+        padding: 0.7em 1.2em;
+        font-size: 0.9em;
       }
     }
+
+    /* SCROLLBAR ESTILOS ADICIONALES */
+    #listar_arrendatarios::-webkit-scrollbar,
+    .preview-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #listar_arrendatarios::-webkit-scrollbar-track,
+    .preview-content::-webkit-scrollbar-track {
+      background: #f0f2f5;
+      border-radius: 10px;
+    }
+
+    #listar_arrendatarios::-webkit-scrollbar-thumb,
+    .preview-content::-webkit-scrollbar-thumb {
+      background: #667eea;
+      border-radius: 10px;
+    }
+
+    #listar_arrendatarios::-webkit-scrollbar-thumb:hover,
+    .preview-content::-webkit-scrollbar-thumb:hover {
+      background: #5568d3;
+    }
+  </style>
 </head>
 <body>
 
@@ -881,7 +966,7 @@
   </div>
 </button>
 
-<button type="button" id="buttonPreview" class="btn">
+<button  type="button" id="buttonPreview" class="btn">
   <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
     <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" />
   </svg>
@@ -892,16 +977,7 @@
   </div>
 </button>
 
-<button type="button" id="buttonModifyOutcome" class="btn">
-  <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-    <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
-  </svg>
-  <div class="txt-wrapper">
-    <div class="txt-1">
-      <span class="btn-letter">E</span><span class="btn-letter">d</span><span class="btn-letter">i</span><span class="btn-letter">t</span><span class="btn-letter">a</span><span class="btn-letter">r</span><span class="btn-letter"> </span><span class="btn-letter">r</span><span class="btn-letter">e</span><span class="btn-letter">s</span><span class="btn-letter">u</span><span class="btn-letter">l</span><span class="btn-letter">t</span><span class="btn-letter">a</span><span class="btn-letter">d</span><span class="btn-letter">o</span>
-    </div>
-  </div>
-</button>
+
 
 <button type="button" id="buttonModifyDB" class="btn">
   <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -928,107 +1004,7 @@
   </div>
 </div>
 
-<div id="listar_arrendatarios" style="max-height:100vh; overflow-y:auto; display:grid; gap:12px; width:100%; min-width:400px; max-width:450px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); padding: 20px; flex-shrink: 0; border: 1px solid rgba(102, 126, 234, 0.2); animation: slideInRight 0.5s ease-out;"></div>
-
-<style>
-  @keyframes slideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(50px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  /* Scrollbar para el contenedor de arrendatarios */
-  #listar_arrendatarios::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  #listar_arrendatarios::-webkit-scrollbar-track {
-    background: rgba(102, 126, 234, 0.1);
-    border-radius: 10px;
-  }
-
-  #listar_arrendatarios::-webkit-scrollbar-thumb {
-    background: #667eea;
-    border-radius: 10px;
-  }
-
-  #listar_arrendatarios::-webkit-scrollbar-thumb:hover {
-    background: #764ba2;
-  }
-
-  /* Responsive: Para pantallas menores a 1400px */
-  @media (max-width: 1400px) {
-    body {
-      grid-template-columns: 1fr;
-      overflow-x: auto;
-    }
-
-    form, .previewoutput, #listar_arrendatarios {
-      min-width: 90vw;
-    }
-  }
-
-  /* Responsive: Para tablets */
-  @media (max-width: 900px) {
-    body {
-      grid-template-columns: 1fr;
-      gap: 15px;
-      padding: 15px;
-    }
-
-    form, .previewoutput, #listar_arrendatarios {
-      min-width: 100%;
-      max-width: 100%;
-    }
-  }
-
-  /* Mejora visual para el contenedor de edición inline */
-  #containerEditarArrendatario {
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15) !important;
-    border-color: #667eea !important;
-    animation: slideDown 0.4s ease-out;
-  }
-
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-20px);
-      max-height: 0;
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-      max-height: 1000px;
-    }
-  }
-
-  /* Cards de arrendatarios mejoradas */
-  #listar_arrendatarios > div {
-    animation: fadeInScale 0.3s ease-out;
-    transition: all 0.3s ease;
-  }
-
-  @keyframes fadeInScale {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  #listar_arrendatarios > div:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.2) !important;
-  }
-</style>
+<div id="listar_arrendatarios" style="max-height:600px; overflow-y:auto; display:grid; gap:12px; width:100%; max-width:500px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.2); padding: 20px; margin-top: 20px;"></div>
 <script>
   let global_a = [];
 function editarArr(id) {
