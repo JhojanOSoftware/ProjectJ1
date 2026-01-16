@@ -152,7 +152,7 @@ def obtener_arrendatario(nombre_ubicacion: str):
     try:
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute("SELECT nombre_arrendatario,nombre_ubicacion,direccion_ubicacion,personas_por_arrendatario  FROM arrendatarios_J0 WHERE nombre_ubicacion = ?", (nombre_ubicacion,))
+        cur.execute("SELECT id, nombre_arrendatario,nombre_ubicacion,direccion_ubicacion,personas_por_arrendatario  FROM arrendatarios_J0 WHERE nombre_ubicacion = ?", (nombre_ubicacion,))
         conn.commit()
         rows = cur.fetchall()
         conn.close()
@@ -216,6 +216,7 @@ def build_preview(WaterValue : int, LuzValue : int, AseoValue : int, GasValue: i
     suma_total = 0
 
     for arr in arrendtario_data: 
+        arrendatario_id = arr["id"]
         nombre_arrendatario = arr["nombre_arrendatario"]
         nombre_ubicacion = arr["nombre_ubicacion"]
         direccion_ubicacion = arr["direccion_ubicacion"] 
@@ -228,6 +229,7 @@ def build_preview(WaterValue : int, LuzValue : int, AseoValue : int, GasValue: i
         total = PrecioAgua + PrecioLuz + PrecioAseo + PrecioGas
         suma_total += total 
         prev_itms.append({
+            "id": arrendatario_id,
             "nombre_arrendatario": nombre_arrendatario,
             "nombre_ubicacion": nombre_ubicacion,
             "direccion_ubicacion": direccion_ubicacion,

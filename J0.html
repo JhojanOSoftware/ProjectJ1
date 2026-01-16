@@ -1006,6 +1006,7 @@
 
 <div id="listar_arrendatarios" style="max-height:600px; overflow-y:auto; display:grid; gap:12px; width:100%; max-width:500px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.2); padding: 20px; margin-top: 20px;"></div>
 <script>
+  let datos_pdf_editables = {};
   let global_a = [];
 function editarArr(id) {
  const arrendatario = global_a.find(a => a.id === id);
@@ -1204,7 +1205,25 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error("Error en preview");
       }
       const data = await res.json();
+      
 
+    datos_pdf_editables = {};
+    data.arrendatarios.forEach((a) => { 
+      datos_pdf_editables[a.id] = {
+        id: a.arrendatario_id,
+        nombre : a.nombre_arrendatario,
+        ubicacion : a.nombre_ubicacion,
+        direccion : a.direccion_ubicacion,
+        personas : a.personas_por_arrendatario,
+        servicios: [
+          {descripcion: "Luz", valor: a.servicios.luz},
+          {descripcion: "Agua", valor: a.servicios.agua},
+          {descripcion: "Gas", valor: a.servicios.gas},
+          {descripcion: "Aseo", valor: a.servicios.aseo}
+        ]
+      };
+      })
+      console.log("Datos para PDF editables:", datos_pdf_editables);
       // Render del preview
       ubicacionEl.textContent = data.ubicacion;
       totalAgregadoEl.textContent = `$ ${data.sum_total.toFixed(2)}`;
@@ -1218,13 +1237,111 @@ document.addEventListener("DOMContentLoaded", () => {
         card.style.border = "1px solid #ddd";
         card.style.borderRadius = "8px";
         card.innerHTML = `
-          <p><strong>${a.nombre_arrendatario}</strong> (${a.personas_por_arrendatario} persona(s))</p>
-          <p>Dirección: ${a.direccion_ubicacion}</p>
-          <p>Luz: $ ${a.servicios.luz.toFixed(2)}</p>
-          <p>Agua: $ ${a.servicios.agua.toFixed(2)}</p>
-          <p>Gas: $ ${a.servicios.gas.toFixed(2)}</p>
-          <p>Aseo: $ ${a.servicios.aseo.toFixed(2)}</p>
-          <p><strong>Total:</strong> $ ${a.total.toFixed(2)}</p>
+          <div style="border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-bottom: 10px;">   
+              <p><strong>${a.nombre_arrendatario}</strong> (${a.personas_por_arrendatario} persona(s))</p>
+              <p>Dirección: ${a.direccion_ubicacion}</p>
+            </div>
+            
+          <div style="display:flex; justify-content:space-between; align-items:center; margin:8px 0;"> 
+          <span> <strong> Luz: </strong> </span>
+          <div>
+            <span class="display-value-preview" data-persona-id="${a.id}" data-concepto="luz" > 
+              $ ${a.servicios.luz.toFixed(2)}
+               </span>               
+            <input 
+            type="number"
+            class="edit-value-preview" 
+            data-persona-id="${a.id}"
+            data-concepto="luz"
+            value="${a.servicios.luz.toFixed(2)}" 
+            style="display:none; width:100px; padding:5px; border:1px solid #667eea; border-radius:5px;">
+          </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin:8px 0;"> 
+          <span> <strong> Agua: </strong> </span>
+          <div>
+            <span class="display-value-preview" data-persona-id="${a.id}" data-concepto="agua" > 
+              $ ${a.servicios.agua.toFixed(2)}
+               </span>               
+            <input 
+            type="number"
+            class="edit-value-preview" 
+            data-persona-id="${a.id}"
+            data-concepto="agua"
+            value="${a.servicios.agua.toFixed(2)}" 
+            style="display:none; width:100px; padding:5px; border:1px solid #667eea; border-radius:5px;">
+          </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin:8px 0;"> 
+          <span> <strong> Gas: </strong> </span>
+          <div>
+            <span class="display-value-preview" data-persona-id="${a.id}" data-concepto="gas" > 
+              $ ${a.servicios.gas.toFixed(2)}
+               </span>               
+            <input 
+            type="number"
+            class="edit-value-preview" 
+            data-persona-id="${a.id}"
+            data-concepto="gas"
+            value="${a.servicios.gas.toFixed(2)}" 
+            style="display:none; width:100px; padding:5px; border:1px solid #667eea; border-radius:5px;">
+          </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin:8px 0;"> 
+          <span> <strong> Aseo: </strong> </span>
+          <div>
+            <span class="display-value-preview" data-persona-id="${a.id}" data-concepto="aseo" > 
+              $ ${a.servicios.aseo.toFixed(2)}
+               </span>               
+            <input 
+            type="number"
+            class="edit-value-preview" 
+            data-persona-id="${a.id}"
+            data-concepto="aseo"
+            value="${a.servicios.aseo.toFixed(2)}" 
+            style="display:none; width:100px; padding:5px; border:1px solid #667eea; border-radius:5px;">
+          </div>
+          </div>
+
+          <div style="border-top: 2px solid #667eea; padding-top: 10px; margin-top: 10px;">
+           <p><strong>Total:</strong> <span id="total-persona-${a.id}">$ ${a.total.toFixed(2)}</span></p>
+           </div>
+
+           <div style="display:flex; gap:8px; margin-top:10px;">
+            <button 
+            class="btn-editar-preview" 
+            data-persona-id="${a.id}"
+                  style="flex:1; padding:8px; background:#667eea; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:600;"
+
+         >
+         Editar
+            </button>
+
+            <button 
+              class="btn-guardar-preview" 
+              data-persona-id="${a.id}" 
+              style="flex:1; padding:8px; background:#28a745; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:600; display:none;"
+            >
+            Guardar
+    </button>
+    
+    <button 
+      class="btn-cancelar-preview" 
+      data-persona-id="${a.id}" 
+      style="flex:1; padding:8px; background:#dc3545; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:600; display:none;"
+    >
+     Cancelar
+    </button>
+    
+    <button 
+      class="btn-agregar-concepto" 
+      data-persona-id="${a.id}" 
+      style="flex:1; padding:8px; background:#ffc107; color:#333; border:none; border-radius:5px; cursor:pointer; font-weight:600; display:none;"
+    >
+      Agregar
+    </button>
+  </div>
         `;
         listEl.appendChild(card);
       });
