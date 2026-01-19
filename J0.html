@@ -1353,6 +1353,102 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+function edit_preview_mod(personaId){
+  console.log(`Modo edición preview activado ${personaId}`);
+  // Ocultar spans y mostrar inputs
+  document.querySelectorAll('span.display-value-preview[data-persona-id="' + personaId + '"]').forEach(el => {
+    el.style.display = "none";
+  });
+  document.querySelectorAll('input.edit-value-preview[data-persona-id="' + personaId + '"]').forEach(el => {
+    el.style.display = "inline-block";
+  });
+
+  // Cambiar botones
+  document.querySelectorAll('.btn-guardar-preview[data-persona-id="' + personaId + '"]').forEach(el => { 
+    el.style.display = "block";  });
+  document.querySelectorAll('.btn-cancelar-preview[data-persona-id="' + personaId + '"]').forEach(el => { 
+    el.style.display = "block";  });
+  document.querySelectorAll('.btn-editar-preview[data-persona-id="' + personaId + '"]').forEach(el => { 
+    el.style.display = "none";  });
+
+}
+
+function cancel_preview_mod(personaId) {
+    console.log(`Modo edición preview cancelado ${personaId}`);
+  // Ocultar spans y mostrar inputs
+  document.querySelectorAll('span.display-value-preview[data-persona-id="' + personaId + '"]').forEach(el => {
+    el.style.display = "block";
+  });
+  document.querySelectorAll('input.edit-value-preview[data-persona-id="' + personaId + '"]').forEach(el => {
+    el.style.display = "none";
+  });
+
+  // Cambiar botones
+  document.querySelectorAll('.btn-guardar-preview[data-persona-id="' + personaId + '"]').forEach(el => { 
+    el.style.display = "none";  });
+  document.querySelectorAll('.btn-cancelar-preview[data-persona-id="' + personaId + '"]').forEach(el => { 
+    el.style.display = "none";  });
+  document.querySelectorAll('.btn-editar-preview[data-persona-id="' + personaId + '"]').forEach(el => { 
+    el.style.display = "block";  });
+
+}
+function save_preview_mode(personaId){
+   
+  console.log('Guardando cambios' + personaId);
+  
+  const inputs = document.querySelectorAll('input.edit-value-preview[data-persona-id="' + personaId + '"]');
+  
+  inputs.forEach(input => { 
+    const concepto = input.getAttribute("data-concepto");
+    const nuevoValor = parseFloat(input.value) || 0;
+
+
+    console.log( " Concepto: " + concepto + " Nuevo valor: " + nuevoValor);
+    const new_service = datos_pdf_editables[personaId].servicios.find( s => s.descripcion.toLowerCase() === concepto);
+    if (!new_service) {
+      console.error("Concepto no encontrado");
+      return;
+    }
+    //Nuevo valor
+   new_service.valor = nuevoValor;
+   console.log("Datos PDF editables actualizados:", datos_pdf_editables[personaId]);
+    const span = document.querySelector(`.display-value-preview[data-persona-id="${personaId}"][data-concepto="${concepto}"]`)
+    span.textContent = `$  ${nuevoValor.toFixed(2)}`;
+
+  })
+    
+  let total = 0;
+  datos_pdf_editables[personaId].servicios.forEach ( s => { 
+    total += s.valor;
+  });
+
+  document.getElementById(`total-persona-${personaId}`).textContent = `$ ${total.toFixed(2)}`;
+  cancel_preview_mod(personaId);
+};
+  
+
+document.getElementById("previewList").addEventListener("click", (e) => {
+  const target = e.target;
+  
+  // Si hizo clic en "Editar"
+  if (target.classList.contains("btn-editar-preview")) {
+    const personaId = target.getAttribute("data-persona-id");
+    edit_preview_mod(personaId);
+  }
+  
+  // Si hizo clic en "Guardar"
+  if (target.classList.contains("btn-guardar-preview")) {
+    const personaId = target.getAttribute("data-persona-id");
+    save_preview_mode(personaId);
+  }
+  
+  // Si hizo clic en "Cancelar"
+  if (target.classList.contains("btn-cancelar-preview")) {
+    const personaId = target.getAttribute("data-persona-id");
+    cancel_preview_mod(personaId);
+  }
+});
+
 </script>
 
 </body>
