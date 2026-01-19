@@ -1001,6 +1001,10 @@
     <p><strong>Ubicación:</strong> <span id="ubicacion"></span></p>
     <div id="previewList"></div>
     <p><strong>Total agregado:</strong> <span id="totalAgregado"></span></p>
+  
+  </div>
+  <div class='preview-content' id="previewContent"></div>
+  <button type="button" id="pdfEdit_preview"> Guardar Cambios Preview</button>
   </div>
 </div>
 
@@ -1125,6 +1129,7 @@ const id = document.getElementById("arrendatario_id").value;
 }
 
 // Event listeners
+document.getElementById("pdfEdit_preview").addEventListener("click", generar_preview_pdf);
 document.getElementById("btnEditarInline").addEventListener("click", edit_mod_activated);
 document.getElementById("btnGuardarInline").addEventListener("click", changes_save_inline);
 document.getElementById("btnCancelarInline").addEventListener("click", cancel_edit_mod);
@@ -1210,7 +1215,7 @@ document.addEventListener("DOMContentLoaded", () => {
     datos_pdf_editables = {};
     data.arrendatarios.forEach((a) => { 
       datos_pdf_editables[a.id] = {
-        id: a.arrendatario_id,
+        id: a.id,
         nombre : a.nombre_arrendatario,
         ubicacion : a.nombre_ubicacion,
         direccion : a.direccion_ubicacion,
@@ -1425,7 +1430,47 @@ function save_preview_mode(personaId){
   document.getElementById(`total-persona-${personaId}`).textContent = `$ ${total.toFixed(2)}`;
   cancel_preview_mod(personaId);
 };
+async function generar_preview_pdf(){
+  console.log(" Generando PDF con datos editados:", datos_pdf_editables);
+  if (!datos_pdf_editables || Object.keys(datos_pdf_editables).length === 0){
+    return alert (" No hay datos para generar el PDF. Por favor, genere la vista previa primero.");
+  }
+  const personas = Object.values (datos_pdf_editables);
+  const sinServicios = personas.filter(p => !p.servicios || p.servicios.length === 0);
+  if (sinServicios.length > 0) {
+    return alert (" Algunos arrendatarios no tienen servicios asignados. Por favor, verifique los datos.");
+  }
+  for (let persona of personas) {
+  for (let servicio of persona.servicios) {
+    if (!servicio.valor || servicio.valor <= 0) {
+      alert(`Servicio ${servicio.descripcion} de ${persona.nombre} tiene valor inválido`);
+      return;
+    }
+  }
+  }
+  const data = { personas: Object.values (datos_pdf_editables) };
   
+  const resp = await fetch ("/api/v1/generar_pdf_editado/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+
+  if (!resp.ok) {
+    console.error(" Error al generar PDF:", resp.statusText);
+    return alert (" No se pudo generar el PDF. Intente nuevamente.");
+  }
+
+  const blob = await resp.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `comprobantes_editados.${Date.now()}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+}
 
 document.getElementById("previewList").addEventListener("click", (e) => {
   const target = e.target;

@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 limiter = Limiter(key_func=get_remote_address)
-from models.ClaseArrendatario import Arrendatario, ArrendatarioUpdate
+from models.ClaseArrendatario import Arrendatario, ArrendatarioUpdate, PDFData, PersonaEditada, Concepto
 from  recexamples import *
 from fastapi.responses import FileResponse
 import tempfile
@@ -261,6 +261,56 @@ def preview_comprobante_end_point(
 
     data = build_preview(WaterValue, LuzValue, AseoValue, GasValue, Selecionador)
     return JSONResponse(content=data) 
+
+@app.post("/api/v1/generar_pdf_editado/")
+def generar_pdf_editado(datos: PDFData,    
+                        backg : BackgroundTasks = BackgroundTasks()
+):
+    temp = tempfile.mkdtemp(prefix="comprobantes_")
+
+    zip_filename = f'comprobantes_{datetime.now().strftime("%Y%m%d_%H%M%S")}.zip'
+    zip_path = os.path.join(temp, zip_filename)
+    archivos = []
+    
+    for persona in datos.personas:
+        luz = next((c for c in persona.servicios if c.descripcion.lower() == "luz"), None)
+        agua = next((c for c in persona.servicios if c.descripcion.lower() == "agua"), None)
+        aseo = next((c for c in persona.servicios if c.descripcion.lower() == "aseo"), None)
+        gas = next((c for c in persona.servicios if c.descripcion.lower() == "gas"), None)
+         
+
+        pdf_pth = GenerarComprobantes(
+            WaterValue=agua.valor if agua else 0,
+            LuzValue=luz.valor if luz else 0,
+            AseoValue=aseo.valor if aseo else 0,
+            GasValue=gas.valor if gas else 0,
+            nombre_arrendatario=persona.nombre,
+            nombre_ubicacion=persona.ubicacion, 
+            direccion_ubicacion=persona.direccion,
+            personas_por_arrendatario=persona.personas_por_arrendatario or 1,
+            output_path = temp )
+        if not (pdf_pth and os.path.exists(pdf_pth)):
+            print(f"PDF faltante para {persona.nombre}: {pdf_pth}")
+            continue 
+
+        archivos.append(pdf_pth)
+            
+    
+
+     # crear zip en temp y añadir archivos existentes
+
+
+    with zipfile.ZipFile(zip_path, "w") as zipf:
+        for file_path in archivos:
+            zipf.write(file_path, arcname=os.path.basename(file_path))
+
+    # programar limpieza del directorio temporal completo (zip + pdfs)
+    if backg:
+        backg.add_task(limpieza_files, [temp])
+
+    return FileResponse(zip_path, media_type="application/zip", filename=zip_filename)
+
+
 
 
 @app.post("/GenerarComprobantes/")
