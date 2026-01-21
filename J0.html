@@ -1134,7 +1134,6 @@ document.getElementById("btnEditarInline").addEventListener("click", edit_mod_ac
 document.getElementById("btnGuardarInline").addEventListener("click", changes_save_inline);
 document.getElementById("btnCancelarInline").addEventListener("click", cancel_edit_mod);
 
-
 // Cargar y mostrar arrendatarios en cards
 async function cargarArrendatarios() {
   try {
@@ -1435,17 +1434,21 @@ function update_total_preview(personaId){
   totalElement.textContent = `$ ${total.toFixed(2)}`;
   console.log(" Total actualizado para persona ID", personaId, ":", total);
 };
-function render_card_prev (personaId){
-
-  const persona  = datos_pdf_editables[personaId];
-  if (!persona) {
-    console.error(" No se encontró la persona para ID:", personaId);
-    return "";
-  } 
-  const cardAntigua = document.querySelector(`[data-persona-id="${personaId}"]`);
-  cardAntigua.innerHTML = cardHTML;
+function render_card_prev(personaId) {
+  const persona = datos_pdf_editables[personaId];
+  const serviciosHTML = persona.servicios
+    .map(s => generate_service_html(personaId, s))
+    .join("");
   
-
+  // Encontrar la card y reemplazar su contenido
+  const cardAntigua = document.querySelector(`.card-persona[data-persona-id="${personaId}"]`);
+  if (cardAntigua) {
+    cardAntigua.innerHTML = `
+      <div style="...">
+        ${serviciosHTML}
+      </div>
+    `;
+  }
 }
 function generate_service_html(personaId, servicio){
    const concepto   = normalizeDesc(servicio.descripcion);
@@ -1491,7 +1494,36 @@ document.getElementById("previewList").addEventListener("click", (e) => {
     const personaId = target.getAttribute("data-persona-id");
     cancel_preview_mod(personaId);
   }
+  if (target.classList.contains("btn-agregar-concepto")) {
+    const personaId = target.getAttribute("data-persona-id");
+    agregar_concepto(personaId);
+  }
 });
+function agregar_concepto(personaId){
+   const descpt = prompt("Ingrese la descripción del nuevo concepto:");
+   if (!descpt  || descpt.trim() === "") return;
+
+   const valor = prompt("Ingrese el valor del nuevo concepto:");
+   if (!valor || isNaN(valor)) return alert (" Valor inválido");
+ 
+   const newconcept = { 
+    descripcion : descpt.trim(), valor: parseFloat(valor) };
+   datos_pdf_editables[personaId].servicios.push(newconcept);
+   
+   const serviciosContainer = document.querySelector(`.card-persona[data-persona-id="${personaId}"] > div`);
+   if (serviciosContainer) {
+    serviciosContainer.innerHTML = datos_pdf_editables[personaId].servicios
+      .map(s => generate_service_html(personaId, s))
+      .join("");
+  } else {
+    console.warn(" No se encontró contenedor de servicios");
+  }
+
+  
+  update_total_preview(personaId);
+  console.log("Concepto agregado:", newconcept);
+
+}
 function generate_all_services_html(personaId) {
   const persona = datos_pdf_editables[personaId];
   
