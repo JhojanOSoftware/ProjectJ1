@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from fastapi import FastAPI, HTTPException, status,Form, BackgroundTasks
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 limiter = Limiter(key_func=get_remote_address)
@@ -18,7 +19,7 @@ import os
 
 # Inicializar la app de FastAPI
 app = FastAPI(title="Actividad Microsite API")
-
+app.mount("/services", StaticFiles(directory="services"), name="services")
 
 # Aplicar el limiter a la app (opcional, para tenerlo disponible globalmente)
 app.state.limiter = limiter
