@@ -205,9 +205,14 @@ def example_service_receipt():
 
 
 
-def GenerarComprobantes(WaterValue:int, LuzValue: int, AseoValue:int, GasValue:int, nombre_arrendatario: str, nombre_ubicacion:str, direccion_ubicacion:str, personas_por_arrendatario:int, Arrendatarios=int,output_path=None):
+def GenerarComprobantes(servicios_dict: dict,
+                        nombre_arrendatario: str, 
+                        nombre_ubicacion:str, 
+                        direccion_ubicacion:str, 
+                        personas_por_arrendatario:int,
+                          Arrendatarios=int,
+                        output_path=None):
 
-    
     # Use PDF-enabled generator
     pdf_generator = PDFReceiptGenerator()
     
@@ -218,13 +223,18 @@ def GenerarComprobantes(WaterValue:int, LuzValue: int, AseoValue:int, GasValue:i
 
     
 
-    items = [
-        ReceiptItem("Agua", 1, WaterValue),
-        ReceiptItem("Luz", 1, LuzValue),
-        ReceiptItem("Aseo", 1, AseoValue),
-        ReceiptItem("Gas", 1, GasValue)
-    ]
     
+    items = []
+    total = 0
+    
+    for descripcion, valor in servicios_dict.items():
+        descripcion_form = descripcion.capitalize()
+        item = ReceiptItem(descripcion_form, 1, valor)
+        items.append(item)
+        
+        total += valor
+
+
     receipt = pdf_generator.create_receipt(
         business_info=business,
         items=items,

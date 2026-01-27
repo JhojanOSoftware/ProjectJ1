@@ -1244,12 +1244,15 @@ document.addEventListener("DOMContentLoaded", () => {
         card.style.borderRadius = "8px";
         card.innerHTML = `
           <div style="border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-bottom: 10px;">   
-              <p><strong>${a.nombre_arrendatario}</strong> (${a.personas_por_arrendatario} persona(s))</p>
-              <p>Dirección: ${a.direccion_ubicacion}</p>
-            </div>
-            
-          ${servicios_html}
-
+            <p><strong>${a.nombre_arrendatario}</strong> (${a.personas_por_arrendatario} persona(s))</p>
+            <p>Dirección: ${a.direccion_ubicacion}</p>
+          </div>
+          
+          <!-- CONTENEDOR ESPECÍFICO PARA SERVICIOS -->
+          <div data-servicios-container="${a.id}">
+            ${servicios_html}
+          </div>
+          
           <div style="border-top: 2px solid #667eea; padding-top: 10px; margin-top: 10px;">
            <p><strong>Total:</strong> <span id="total-persona-${a.id}">$ ${a.total.toFixed(2)}</span></p>
            </div>
@@ -1500,29 +1503,47 @@ document.getElementById("previewList").addEventListener("click", (e) => {
   }
 });
 function agregar_concepto(personaId){
-   const descpt = prompt("Ingrese la descripción del nuevo concepto:");
-   if (!descpt  || descpt.trim() === "") return;
+  // 1️⃣ VALIDAR - Descripción
+  const descripcion = prompt("¿Nombre del concepto? (ej: Internet, Teléfono)");
+  if (!descripcion || descripcion.trim() === "") {
+    alert("❌ Por favor ingrese un nombre válido");
+    return;
+  }
 
-   const valor = prompt("Ingrese el valor del nuevo concepto:");
-   if (!valor || isNaN(valor)) return alert (" Valor inválido");
- 
-   const newconcept = { 
-    descripcion : descpt.trim(), valor: parseFloat(valor) };
-   datos_pdf_editables[personaId].servicios.push(newconcept);
-   
-   const serviciosContainer = document.querySelector(`.card-persona[data-persona-id="${personaId}"] > div`);
-   if (serviciosContainer) {
+  // 2️⃣ VALIDAR - Valor
+  const valor = prompt("¿Valor del concepto?");
+  if (!valor || isNaN(valor) || parseFloat(valor) <= 0) {
+    alert("❌ Por favor ingrese un valor válido (> 0)");
+    return;
+  }
+
+  // 3️⃣ CREAR OBJETO
+  const nuevoConcepto = {
+    descripcion: descripcion.trim(),
+    valor: parseFloat(valor)
+  };
+
+  // 4️⃣ AGREGAR A datos_pdf_editables
+  datos_pdf_editables[personaId].servicios.push(nuevoConcepto);
+  console.log("✅ Concepto agregado:", nuevoConcepto);
+
+  // 5️⃣ RE-RENDERIZAR CONTENEDOR (CLAVE: [data-servicios-container])
+  const serviciosContainer = document.querySelector(`[data-servicios-container="${personaId}"]`);
+  
+  if (serviciosContainer) {
     serviciosContainer.innerHTML = datos_pdf_editables[personaId].servicios
       .map(s => generate_service_html(personaId, s))
       .join("");
+    console.log("✅ Contenedor re-renderizado");
   } else {
-    console.warn(" No se encontró contenedor de servicios");
+    console.error("❌ No se encontró contenedor de servicios");
+    return;
   }
 
-  
+  // 6️⃣ ACTUALIZAR TOTAL
   update_total_preview(personaId);
-  console.log("Concepto agregado:", newconcept);
 
+  alert("✅ Concepto agregado correctamente");
 }
 function generate_all_services_html(personaId) {
   const persona = datos_pdf_editables[personaId];

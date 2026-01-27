@@ -273,22 +273,28 @@ def generar_pdf_editado(datos: PDFData,
     archivos = []
     
     for persona in datos.personas:
-        luz = next((c for c in persona.servicios if c.descripcion.lower() == "luz"), None)
-        agua = next((c for c in persona.servicios if c.descripcion.lower() == "agua"), None)
-        aseo = next((c for c in persona.servicios if c.descripcion.lower() == "aseo"), None)
-        gas = next((c for c in persona.servicios if c.descripcion.lower() == "gas"), None)
-         
-
+        #  Acceso directo como atributo (no .get())
+        servicios = persona.servicios
+        
+        #  Convertir lista de objetos Concepto a diccionario
+        servicios_dict = {}
+        for servicio in servicios:
+            descripcion = servicio.descripcion.lower()  #  Atributo directo
+            valor = servicio.valor  #  Atributo directo
+            servicios_dict[descripcion] = valor
+        
+        print(f" Servicios para {persona.nombre}: {servicios_dict}")  # 
+        
+        #  Acceso directo a atributos
         pdf_pth = GenerarComprobantes(
-            WaterValue=agua.valor if agua else 0,
-            LuzValue=luz.valor if luz else 0,
-            AseoValue=aseo.valor if aseo else 0,
-            GasValue=gas.valor if gas else 0,
-            nombre_arrendatario=persona.nombre,
-            nombre_ubicacion=persona.ubicacion, 
-            direccion_ubicacion=persona.direccion,
-            personas_por_arrendatario=persona.personas_por_arrendatario or 1,
-            output_path = temp )
+            servicios_dict=servicios_dict,
+            nombre_arrendatario=persona.nombre,  # 
+            nombre_ubicacion=persona.ubicacion,  # 
+            direccion_ubicacion=persona.direccion,  # 
+            personas_por_arrendatario=persona.personas_por_arrendatario or 1,  #  s
+            output_path=temp    
+        )
+    
         if not (pdf_pth and os.path.exists(pdf_pth)):
             print(f"PDF faltante para {persona.nombre}: {pdf_pth}")
             continue 
@@ -336,15 +342,21 @@ def generar_comprobante_end_point(
         nombre_ubicacion = entry["nombre_ubicacion"]
         direccion_ubicacion = entry["direccion_ubicacion"]
         personas_por_arrendatario = int(entry.get("personas_por_arrendatario") or 1)
-        servicios = entry["servicios"]
+        servicios = entry["servicios"]  # ← Ya es un diccionario
 
+        #  CAMBIO: Convertir diccionario de servicios (asegurarse de que tenga descripciones)
+        servicios_dict = {
+            'agua': servicios.get('agua', 0),
+            'luz': servicios.get('luz', 0),
+            'aseo': servicios.get('aseo', 0),
+            'gas': servicios.get('gas', 0)
+        }
+        
+        print(f"Servicios para {nombre_arrendatario}: {servicios_dict}")
 
-        # pedir al generador que escriba el PDF dentro del directorio temporal y devuelva la ruta
+        #  LLAMAR CON servicios_dict (parámetros NUEVOS)
         pdf_path = GenerarComprobantes(
-            WaterValue=servicios["agua"],
-            LuzValue=servicios["luz"],
-            AseoValue=servicios["aseo"],
-            GasValue=servicios["gas"],
+            servicios_dict=servicios_dict,      # CAMBIO PRINCIPAL
             nombre_arrendatario=nombre_arrendatario,
             nombre_ubicacion=nombre_ubicacion,
             direccion_ubicacion=direccion_ubicacion,
