@@ -169,7 +169,7 @@ class PDFReceiptGenerator(ReceiptGenerator):
         
         receipt_info_table = Table(receipt_info_data)
         receipt_info_table.setStyle(TableStyle([
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('FONTSIZE', (0, 0), (-1, -1), 12),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ]))
         
@@ -196,7 +196,7 @@ class PDFReceiptGenerator(ReceiptGenerator):
             ('ALIGN', (0, 1), (0, -1), 'LEFT'),  # Item names left-aligned
             ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),  # Prices right-aligned
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('FONTSIZE', (0, 0), (-1, -1), 13),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
         ]))
         
