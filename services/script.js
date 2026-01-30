@@ -27,11 +27,22 @@ function editarArr(id) {
   document.getElementById("input_personas").value = arrendatario.personas_por_arrendatario;
   document.getElementById("input_telefono").value = arrendatario.telefono || "";
   document.getElementById("input_email").value = arrendatario.email || "";
-
-  document.getElementById("containerEditarArrendatario").style.display = "block";
   document.getElementById("formTitle").textContent = "Editar Arrendatario";
 }
+function close_edit_user(){
 
+    const container = document.getElementById("containerEditarArrendatario");
+    if (!container) return console.error(" No se encontró el contenedor de edición");
+    container.style.display = "none";
+      // Opcional: Limpiar campos si quieres
+    document.getElementById("arrendatario_id").value = "";
+    document.getElementById("input_nombre").value = "";
+    document.getElementById("input_ubicacion").value = "";
+    document.getElementById("input_direccion").value = "";
+    document.getElementById("input_personas").value = "";
+    document.getElementById("input_telefono").value = "";
+    document.getElementById("input_email").value = "";
+  }
 function edit_mod_activated(){
   modoEdicionInline = true;
 
@@ -179,6 +190,10 @@ document.addEventListener("DOMContentLoaded", () => {
     btnCancelarInline.addEventListener("click", cancel_edit_mod);
   }
 
+  const btnCancelarEdicion = document.getElementById("cancel_arrendatarios");
+  if (btnCancelarEdicion) {
+    btnCancelarEdicion.addEventListener("click", close_edit_user);
+  }
   const buttonModifyDB = document.getElementById("buttonModifyDB");
   if (buttonModifyDB) {
     buttonModifyDB.addEventListener("click", cargarArrendatarios);
