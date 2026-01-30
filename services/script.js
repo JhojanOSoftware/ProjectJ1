@@ -64,6 +64,7 @@ function cancel_edit_mod(){
   document.getElementById("btnEditarInline").style.display = "block";
   document.getElementById("btnGuardarInline").style.display = "none";
   document.getElementById("btnCancelarInline").style.display = "none";
+  document.getElementById("containerEditarArrendatario").style.display = "none";
   console.log("Canceló edición inline ");
 }
 async function changes_save_inline (){
@@ -116,11 +117,7 @@ const id = document.getElementById("arrendatario_id").value;
   }
 }
 
-// Event listeners
-document.getElementById("pdfEdit_preview").addEventListener("click", generar_preview_pdf);
-document.getElementById("btnEditarInline").addEventListener("click", edit_mod_activated);
-document.getElementById("btnGuardarInline").addEventListener("click", changes_save_inline);
-document.getElementById("btnCancelarInline").addEventListener("click", cancel_edit_mod);
+
 
 // Cargar y mostrar arrendatarios en cards
 async function cargarArrendatarios() {
@@ -158,7 +155,6 @@ async function cargarArrendatarios() {
   }
 }
 
-document.getElementById("buttonModifyDB").addEventListener("click", cargarArrendatarios);
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -168,7 +164,30 @@ document.addEventListener("DOMContentLoaded", () => {
   const ubicacionEl = document.getElementById("ubicacion");
   const listEl = document.getElementById("previewList");
   const totalAgregadoEl = document.getElementById("totalAgregado");
+  const btnEditarInline = document.getElementById("btnEditarInline");
+  if (btnEditarInline) {
+    btnEditarInline.addEventListener("click", edit_mod_activated);
+  }
 
+  const btnGuardarInline = document.getElementById("btnGuardarInline");
+  if (btnGuardarInline) {
+    btnGuardarInline.addEventListener("click", changes_save_inline);
+  }
+
+  const btnCancelarInline = document.getElementById("btnCancelarInline");
+  if (btnCancelarInline) {
+    btnCancelarInline.addEventListener("click", cancel_edit_mod);
+  }
+
+  const buttonModifyDB = document.getElementById("buttonModifyDB");
+  if (buttonModifyDB) {
+    buttonModifyDB.addEventListener("click", cargarArrendatarios);
+  }
+
+  const pdfEditPreview = document.getElementById("pdfEdit_preview");
+  if (pdfEditPreview) {
+    pdfEditPreview.addEventListener("click", generar_preview_pdf);
+  }
   const getFormValues = () => ({
     WaterValue: document.getElementById("WaterValue").value || 0,
     LuzValue: document.getElementById("LuzValue").value || 0,

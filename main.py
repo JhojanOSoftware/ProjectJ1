@@ -16,6 +16,7 @@ from fastapi.responses import FileResponse
 import tempfile
 import zipfile
 import os
+from Mysql_cn import ConectorDB
 
 # Inicializar la app de FastAPI
 app = FastAPI(title="Actividad Microsite API")
@@ -23,9 +24,9 @@ app.mount("/services", StaticFiles(directory="services"), name="services")
 
 # Aplicar el limiter a la app (opcional, para tenerlo disponible globalmente)
 app.state.limiter = limiter
-
-
-
+def get_conn():
+    con = ConectorDB()
+    return con.baseConnect()
 
 # Ajusta orígenes según donde sirvas el frontend
 app.add_middleware(
@@ -39,37 +40,14 @@ app.add_middleware(
 DB_FILE = "data/J0BaseDatos.db"
 
 
-def get_conn() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_FILE, timeout=10)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-def Db_Arrendatarios() -> None:
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS arrendatarios_J0 (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre_arrendatario TEXT NOT NULL,
-            nombre_ubicacion TEXT NOT NULL,
-            direccion_ubicacion TEXT NOT NULL,
-            personas_por_arrendatario INTEGER,
-            telefono TEXT,
-            email TEXT
-        )
-    """)
-    
-    
-    conn.commit()
-    conn.close()
+   
 
 def total_personas(nombre_ubicacion:str):
 
     try :
         con = get_conn()
         cur = con.cursor()
-        cur.execute("SELECT SUM(personas_por_arrendatario) as total FROM arrendatarios_J0 WHERE nombre_ubicacion = ?", (nombre_ubicacion,))
+        cur.execute("SELECT SUM(personas_por_arrendatario) as total FROM arrendatarios_J0 WHERE nombre_ubicacion = %s", (nombre_ubicacion,))
         row = cur.fetchone()
         con.close()
         return row["total"] if row["total"] is not None else 1
@@ -104,9 +82,7 @@ def limpieza_files(paths: list):
 
     
 
-@app.on_event("startup")
-def startup():
-    Db_Arrendatarios()
+
     
 
 
@@ -133,7 +109,7 @@ def crear_proyecto(Arrendatario: Arrendatario):
         cur.execute(
             """
             INSERT INTO arrendatarios_J0 (nombre_arrendatario, nombre_ubicacion, direccion_ubicacion,personas_por_arrendatario, telefono, email)
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s)
             """,
             (Arrendatario.nombre_arrendatario, Arrendatario.nombre_ubicacion, Arrendatario.direccion_ubicacion,Arrendatario.personas_por_arrendatario, Arrendatario.telefono, Arrendatario.email)
         )
@@ -153,7 +129,7 @@ def obtener_arrendatario(nombre_ubicacion: str):
     try:
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute("SELECT id, nombre_arrendatario,nombre_ubicacion,direccion_ubicacion,personas_por_arrendatario  FROM arrendatarios_J0 WHERE nombre_ubicacion = ?", (nombre_ubicacion,))
+        cur.execute("SELECT id, nombre_arrendatario,nombre_ubicacion,direccion_ubicacion,personas_por_arrendatario  FROM arrendatarios_J0 WHERE nombre_ubicacion = %s", (nombre_ubicacion,))
         conn.commit()
         rows = cur.fetchall()
         conn.close()
@@ -168,7 +144,7 @@ def actualizar_arrendatario(arrendatario_id: int, datos: ArrendatarioUpdate):
     try:
         conn = get_conn()
         cursor = conn.cursor()
-        cursor.execute ('SELECT * FROM arrendatarios_J0 WHERE id = ?', (arrendatario_id,))
+        cursor.execute ('SELECT * FROM arrendatarios_J0 WHERE id = %s', (arrendatario_id,))
         exists= cursor.fetchone()
 
         if not exists:
@@ -177,8 +153,8 @@ def actualizar_arrendatario(arrendatario_id: int, datos: ArrendatarioUpdate):
         cursor.execute(
             """
             UPDATE arrendatarios_J0 
-            SET nombre_arrendatario = ?, nombre_ubicacion = ?, direccion_ubicacion = ?, personas_por_arrendatario = ?, telefono = ?, email = ?
-            WHERE id = ?
+            SET nombre_arrendatario = %s, nombre_ubicacion = %s, direccion_ubicacion = %s, personas_por_arrendatario = %s, telefono = %s, email = %s
+            WHERE id = %s
             """,
             (datos.nombre_arrendatario, datos.nombre_ubicacion, datos.direccion_ubicacion, datos.personas_por_arrendatario, datos.telefono, datos.email, arrendatario_id)
         )
@@ -194,7 +170,7 @@ def eliminar_arrendatario(arrendatario_id: int):
     try:
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute("DELETE  FROM arrendatarios_J0 WHERE id = ?", (arrendatario_id,))
+        cur.execute("DELETE  FROM arrendatarios_J0 WHERE id = %s", (arrendatario_id,))
         conn.commit()
         affected = cur.rowcount
         conn.close()
