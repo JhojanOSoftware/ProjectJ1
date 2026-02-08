@@ -19,8 +19,9 @@ Proyecto en Python para automatización y generación de documentos, con scripts
 ## Uso
 1. Configura las variables de entorno necesarias (por ejemplo, credenciales de base de datos).
 2. Ejecuta el proyecto:
-   - Windows (PowerShell):
+   - Windows (PowerShell) o en CMD:
      - `python main.py`
+     - `uvicorn main:app --reload --host 127.0.0.1 --port 8000`
 
 ## Notas
 - Ajusta los paths y credenciales según tu entorno.
