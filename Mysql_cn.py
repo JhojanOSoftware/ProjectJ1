@@ -18,6 +18,7 @@ class ConectorDB:#Credenciales BD MySQL
     
 #Migration Funtion SQL to Mysql 
     def migration(self):
+        """Legacy migration helper kept for manual database transfers only."""
         SQLITE_DB = "data/J0BaseDatos.db"
         MYSQL_CONFIG = {
         "host": "localhost",
@@ -43,25 +44,24 @@ class ConectorDB:#Credenciales BD MySQL
             filas = sqlite_cur.fetchall()
             if not filas:
                 print("  (empty table, skipping)")
-            continue
+                continue
 
-        #Obt valid c  
-        mysql_cur.execute(f"DESCRIBE {table}")
-        columnas_mysql = [col["Field"] for col in mysql_cur.fetchall()]
+            mysql_cur.execute(f"DESCRIBE {table}")
+            columnas_mysql = [col["Field"] for col in mysql_cur.fetchall()]
 
-        # filter ambas db in tables 
-        columnas_comunes = [c for c in filas[0].keys() if c in columnas_mysql]
-        columnas_str = ", ".join(columnas_comunes)
-        placeholders = ", ".join(["%s"] * len(columnas_comunes))
-        insert_sql = f"INSERT INTO {table} ({columnas_str}) VALUES ({placeholders})"
+            # filter ambas db in tables 
+            columnas_comunes = [c for c in filas[0].keys() if c in columnas_mysql]
+            columnas_str = ", ".join(columnas_comunes)
+            placeholders = ", ".join(["%s"] * len(columnas_comunes))
+            insert_sql = f"INSERT INTO {table} ({columnas_str}) VALUES ({placeholders})"
 
-        for fila in tqdm(filas, desc=f"   Insertando {table}", ncols=80):
-            valores = [fila[c] for c in columnas_comunes]
-            try:
-                mysql_cur.execute(insert_sql, valores)
-            except Exception as e:
-                print(f" Error in row: {dict(fila)}")
-                print(f"   Reason: {e}")
+            for fila in tqdm(filas, desc=f"   Insertando {table}", ncols=80):
+                valores = [fila[c] for c in columnas_comunes]
+                try:
+                    mysql_cur.execute(insert_sql, valores)
+                except Exception as e:
+                    print(f" Error in row: {dict(fila)}")
+                    print(f"   Reason: {e}")
 
         mysql_conn.commit()
         print("\n Data Migration Completed.")
