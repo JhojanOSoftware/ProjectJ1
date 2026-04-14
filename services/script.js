@@ -28,12 +28,26 @@ function editarArr(id) {
   document.getElementById("input_telefono").value = arrendatario.telefono || "";
   document.getElementById("input_email").value = arrendatario.email || "";
   document.getElementById("formTitle").textContent = "Editar Arrendatario";
+
+  // Mostrar el contenedor de edición y el overlay
+  const container = document.getElementById("containerEditarArrendatario");
+  const overlay = document.getElementById("modalOverlay");
+  if (container) {
+    container.style.display = "block";
+  }
+  if (overlay) {
+    overlay.style.display = "flex";
+  }
 }
 function close_edit_user(){
 
     const container = document.getElementById("containerEditarArrendatario");
+    const overlay = document.getElementById("modalOverlay");
     if (!container) return console.error(" No se encontró el contenedor de edición");
     container.style.display = "none";
+    if (overlay) {
+      overlay.style.display = "none";
+    }
       // Opcional: Limpiar campos si quieres
     document.getElementById("arrendatario_id").value = "";
     document.getElementById("input_nombre").value = "";
@@ -51,7 +65,7 @@ function edit_mod_activated(){
   });
 
   document.querySelectorAll(".edit-field").forEach(el => {
-    el.style.display = "block";0
+    el.style.display = "block";
   });
   // Cambiar botones
   document.getElementById("btnEditarInline").style.display = "none";
@@ -76,6 +90,10 @@ function cancel_edit_mod(){
   document.getElementById("btnGuardarInline").style.display = "none";
   document.getElementById("btnCancelarInline").style.display = "none";
   document.getElementById("containerEditarArrendatario").style.display = "none";
+  const overlay = document.getElementById("modalOverlay");
+  if (overlay) {
+    overlay.style.display = "none";
+  }
   console.log("Canceló edición inline ");
 }
 async function changes_save_inline (){
@@ -197,6 +215,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const buttonModifyDB = document.getElementById("buttonModifyDB");
   if (buttonModifyDB) {
     buttonModifyDB.addEventListener("click", cargarArrendatarios);
+  }
+
+  // Cerrar modal si hace clic en el overlay
+  const modalOverlay = document.getElementById("modalOverlay");
+  if (modalOverlay) {
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) {
+        close_edit_user();
+      }
+    });
   }
 
   const pdfEditPreview = document.getElementById("pdfEdit_preview");
