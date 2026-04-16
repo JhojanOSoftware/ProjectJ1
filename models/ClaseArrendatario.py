@@ -8,6 +8,7 @@ class ArrendatarioUpdate(BaseModel):
     personas_por_arrendatario: int 
     telefono: Optional[str] = None
     email: Optional[str] = None
+    in_house_location: Optional[str] = None
 
 
 class Arrendatario(BaseModel):
@@ -18,6 +19,7 @@ class Arrendatario(BaseModel):
     personas_por_arrendatario: Annotated[int, Field(..., gt=0, lt=100, description="Número de personas por arrendatario")]
     telefono: Annotated[str, Field(..., min_length=5, max_length=30, description="Número de teléfono del arrendatario")]
     email: Annotated[str, Field(..., min_length=5, max_length=320, description="Correo electrónico del arrendatario")]
+    in_house_location: Optional[str] = Field(None, max_length=500, description="Ubicación In-House opcional")
 
 class Concepto(BaseModel):
     descripcion: str = Field(..., min_length=1, max_length=200,         description="Descripción del concepto (Luz, Agua, Gas, etc.)")

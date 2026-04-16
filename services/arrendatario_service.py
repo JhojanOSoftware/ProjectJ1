@@ -31,7 +31,7 @@ class ArrendatarioService:
                 cur = conn.cursor()
                 cur.execute(
                     "SELECT id, nombre_arrendatario, nombre_ubicacion, "
-                    "direccion_ubicacion, personas_por_arrendatario "
+                    "direccion_ubicacion, personas_por_arrendatario, telefono, email, in_house_location "
                     "FROM arrendatarios_J0 WHERE nombre_ubicacion = %s",
                     (nombre_ubicacion,)
                 )
@@ -86,8 +86,8 @@ class ArrendatarioService:
                     """
                     INSERT INTO arrendatarios_J0 
                     (nombre_arrendatario, nombre_ubicacion, direccion_ubicacion,
-                     personas_por_arrendatario, telefono, email)
-                    VALUES (%s, %s, %s, %s, %s, %s)
+                     personas_por_arrendatario, telefono, email, in_house_location)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
                     """,
                     (
                         arrendatario.nombre_arrendatario,
@@ -95,7 +95,8 @@ class ArrendatarioService:
                         arrendatario.direccion_ubicacion,
                         arrendatario.personas_por_arrendatario,
                         arrendatario.telefono,
-                        arrendatario.email
+                        arrendatario.email,
+                        arrendatario.in_house_location
                     )
                 )
                 conn.commit()
@@ -123,7 +124,7 @@ class ArrendatarioService:
                     UPDATE arrendatarios_J0 
                     SET nombre_arrendatario = %s, nombre_ubicacion = %s, 
                         direccion_ubicacion = %s, personas_por_arrendatario = %s, 
-                        telefono = %s, email = %s
+                        telefono = %s, email = %s, in_house_location = %s
                     WHERE id = %s
                     """,
                     (
@@ -133,6 +134,7 @@ class ArrendatarioService:
                         datos.personas_por_arrendatario,
                         datos.telefono,
                         datos.email,
+                        datos.in_house_location,
                         arrendatario_id
                     )
                 )
