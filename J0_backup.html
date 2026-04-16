@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario de Registro</title>
+  <link rel="stylesheet" href="services/stylemain.css">
+</head>
+<body>
+
+    <form action="/GenerarComprobantes/" method="post">
+    <h2 id="formTitle">Registro de Servicios y Precios</h2>
+    <h2 id="mensaje">Mensaje</h2>
+    
+    <!-- OVERLAY PARA MODAL -->
+    <div id="modalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; justify-content:center; align-items:center;">
+    </div>
+
+    <!-- CONTENEDOR DE EDICIÓN INLINE -->
+    <div id="containerEditarArrendatario" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); border: 2px solid #667eea; padding: 30px; border-radius: 10px; background: white; width:90%; max-width:500px; z-index:1000; box-shadow:0 4px 20px rgba(0,0,0,0.3); max-height:80vh; overflow-y:auto;">
+      
+      <input type="hidden" id="arrendatario_id">
+      
+      <!-- Campo: Nombre -->
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom: 5px; font-weight:bold; color:#333;">Nombre del Arrendatario:</label>
+        <div id="display_nombre" class="display-field">-</div>
+        <input type="text" id="input_nombre" class="edit-field" style="display:none; width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="Nombre">
+      </div>
+
+      <!-- Campo: Ubicación -->
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom: 5px; font-weight:bold; color:#333;">Ubicación:</label>
+        <div id="display_ubicacion" class="display-field">-</div>
+        <input type="text" id="input_ubicacion" class="edit-field" style="display:none; width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="Ubicación">
+      </div>
+
+      <!-- Campo: Dirección -->
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom: 5px; font-weight:bold; color:#333;">Dirección:</label>
+        <div id="display_direccion" class="display-field">-</div>
+        <input type="text" id="input_direccion" class="edit-field" style="display:none; width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="Dirección">
+      </div>
+
+      <!-- Campo: Personas -->
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom: 5px; font-weight:bold; color:#333;">Personas en el Apartamento:</label>
+        <div id="display_personas" class="display-field">-</div>
+        <input type="number" id="input_personas" class="edit-field" style="display:none; width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" min="1" placeholder="Número de personas">
+      </div>
+
+      <!-- Campo: Teléfono -->
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom: 5px; font-weight:bold; color:#333;">Teléfono:</label>
+        <div id="display_telefono" class="display-field">-</div>
+        <input type="text" id="input_telefono" class="edit-field" style="display:none; width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="Teléfono">
+      </div>
+
+      <!-- Campo: Email -->
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom: 5px; font-weight:bold; color:#333;">Email:</label>
+        <div id="display_email" class="display-field">-</div>
+        <input type="email" id="input_email" class="edit-field" style="display:none; width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="Email">
+      </div>
+
+      <!-- Botones de acción -->
+      <div style="display:flex; gap:10px;">
+        <button type="button" id="btnEditarInline" class="btn" style="flex:1;">
+          <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
+          </svg>
+          <div class="txt-wrapper">
+            <div class="txt-1">
+              <span class="btn-letter">E</span><span class="btn-letter">d</span><span class="btn-letter">i</span><span class="btn-letter">t</span><span class="btn-letter">a</span><span class="btn-letter">r</span>
+            </div>
+          </div>
+        </button>
+        
+        <button type="button" id="btnGuardarInline" class="btn" style="flex:1; display:none;">
+          <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M15,9H5V5H15M12,19A7,7 0 0,1 5,12A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M16.31,16.31L13.9,13.9A4,4 0 0,0 12,14A4,4 0 0,1 8,10A4,4 0 0,1 12,6A4,4 0 0,1 16,10A4,4 0 0,0 14.9,13.9L16.31,15.31V16.31Z" />
+          </svg>
+          <div class="txt-wrapper">
+            <div class="txt-1">
+              <span class="btn-letter">G</span><span class="btn-letter">u</span><span class="btn-letter">a</span><span class="btn-letter">r</span><span class="btn-letter">d</span><span class="btn-letter">a</span><span class="btn-letter">r</span>
+            </div>
+          </div>
+        </button>
+        
+        <button type="button" id="cancel_arrendatarios" class="btn" style="flex:1; display:none;">          <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+          </svg>
+          <div class="txt-wrapper">
+            <div class="txt-1">
+              <span class="btn-letter">C</span><span class="btn-letter">a</span><span class="btn-letter">n</span><span class="btn-letter">c</span><span class="btn-letter">e</span><span class="btn-letter">l</span><span class="btn-letter">a</span><span class="btn-letter">r</span>
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Resto del formulario para servicios -->
+    <label for="WaterValue">Precio Agua:</label>
+    <input type="number" id="WaterValue" name="WaterValue" >
+
+    <label for="LuzValue">Precio Luz:</label>
+    <input type="number" id="LuzValue" name="LuzValue" >
+
+    <label for="GasValue">Precio Gas:</label>
+    <input type="number" id="GasValue" name="GasValue"  >
+
+    <label for="AseoValue">Precio Aseo:</label>
+    <input type="number" id="AseoValue" name="AseoValue" >
+
+
+    
+    <label>Seleccionar Ubicación:</label>
+    <select id="opciones" name="Selecionador">
+      <option value="Amparo">Amparo</option>
+      <option value="USA">USA</option>
+    </select>
+
+
+    <button type="submit" id="buttonGenerarPDF" class="btn">
+  <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+  </svg>
+  <div class="txt-wrapper">
+    <div class="txt-1">
+      <span class="btn-letter">G</span><span class="btn-letter">e</span><span class="btn-letter">n</span><span class="btn-letter">e</span><span class="btn-letter">r</span><span class="btn-letter">a</span><span class="btn-letter">r</span>
+    </div>
+  </div>
+</button>
+
+<button  type="button" id="buttonPreview" class="btn">
+  <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" />
+  </svg>
+  <div class="txt-wrapper">
+    <div class="txt-1">
+      <span class="btn-letter">P</span><span class="btn-letter">r</span><span class="btn-letter">e</span><span class="btn-letter">v</span><span class="btn-letter">i</span><span class="btn-letter">e</span><span class="btn-letter">w</span>
+    </div>
+  </div>
+</button>
+
+
+
+<button type="button" id="buttonModifyDB" class="btn">
+  <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
+  </svg>
+  <div class="txt-wrapper">
+    <div class="txt-1">
+      <span class="btn-letter">Editar</span><span class="btn-letter">BD</span>
+    </div>
+  </div>
+</button>
+  </form>
+
+
+<div id="previewoutput" class="previewoutput">
+  <div class="preview-header" id="previewHeader">
+    <h3>Vista Previa a PDF</h3>
+    <span class="preview-toggle">▼</span>
+  </div>
+  <div class="preview-content" id="previewContent">
+    <p><strong>Ubicación:</strong> <span id="ubicacion"></span></p>
+    <div id="previewList"></div>
+    <p><strong>Total agregado:</strong> <span id="totalAgregado"></span></p>
+  
+  </div>
+  <div class='preview-content' id="previewContent"></div>
+  <button type="button" id="pdfEdit_preview"> Guardar Cambios Preview</button>
+  </div>
+</div>
+
+<div id="listar_arrendatarios" style="max-height:600px; overflow-y:auto; display:grid; gap:12px; width:100%; max-width:500px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.2); padding: 20px; margin-top: 20px;"></div>
+<script src="/services/script.js" ></script>
+
+</body>
+</html>

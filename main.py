@@ -3,8 +3,9 @@ Actividad Microsite API - Main Application
 FastAPI application for managing tenants (arrendatarios) and utility billing.
 """
 import logging
+import os
 from fastapi import FastAPI, HTTPException, status
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter
@@ -53,6 +54,11 @@ try:
 except Exception as e:
     logger.warning(f"Could not mount services directory: {e}")
 
+try:
+    app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
+except Exception as e:
+    logger.warning(f"Could not mount frontend assets directory: {e}")
+
 # Include routers
 app.include_router(arrendatarios_router)
 app.include_router(reportes_router)
@@ -69,11 +75,15 @@ async def health_check():
 # Home endpoint
 @app.get("/", tags=["Home"])
 async def read_root():
-    """Serve the home page (J0.html)."""
+    """Serve the modern frontend build with fallback to legacy HTML."""
     try:
-        with open("J0.html", "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read(), status_code=200)
-    except FileNotFoundError:
+        modern_index = "static/index.html"
+        if os.path.exists(modern_index):
+            return FileResponse(modern_index)
+
+        if os.path.exists("J0.html"):
+            return FileResponse("J0.html")
+
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Home page not found"
