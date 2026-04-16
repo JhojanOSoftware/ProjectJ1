@@ -82,25 +82,57 @@ class ArrendatarioService:
         try:
             with get_db_context() as conn:
                 cur = conn.cursor()
-                cur.execute(
-                    """
-                    INSERT INTO arrendatarios_J0 
-                    (nombre_arrendatario, nombre_ubicacion, direccion_ubicacion,
-                     personas_por_arrendatario, telefono, email, in_house_location)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (
-                        arrendatario.nombre_arrendatario,
-                        arrendatario.nombre_ubicacion,
-                        arrendatario.direccion_ubicacion,
-                        arrendatario.personas_por_arrendatario,
-                        arrendatario.telefono,
-                        arrendatario.email,
-                        arrendatario.in_house_location
+                next_id = None
+                try:
+                    cur.execute(
+                        """
+                        INSERT INTO arrendatarios_J0 
+                        (nombre_arrendatario, nombre_ubicacion, direccion_ubicacion,
+                         personas_por_arrendatario, telefono, email, in_house_location)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (
+                            arrendatario.nombre_arrendatario,
+                            arrendatario.nombre_ubicacion,
+                            arrendatario.direccion_ubicacion,
+                            arrendatario.personas_por_arrendatario,
+                            arrendatario.telefono,
+                            arrendatario.email,
+                            arrendatario.in_house_location
+                        )
                     )
-                )
+                except Exception as db_error:
+                    # Fallback for schemas where id has no default/autoincrement.
+                    # Error 1364: Field 'id' doesn't have a default value.
+                    err_code = getattr(db_error, "args", [None])[0]
+                    err_text = str(db_error)
+                    if err_code != 1364 and "Field 'id' doesn't have a default value" not in err_text:
+                        raise
+
+                    cur.execute("SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM arrendatarios_J0")
+                    next_row = cur.fetchone() or {"next_id": 1}
+                    next_id = int(next_row.get("next_id", 1))
+
+                    cur.execute(
+                        """
+                        INSERT INTO arrendatarios_J0 
+                        (id, nombre_arrendatario, nombre_ubicacion, direccion_ubicacion,
+                         personas_por_arrendatario, telefono, email, in_house_location)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (
+                            next_id,
+                            arrendatario.nombre_arrendatario,
+                            arrendatario.nombre_ubicacion,
+                            arrendatario.direccion_ubicacion,
+                            arrendatario.personas_por_arrendatario,
+                            arrendatario.telefono,
+                            arrendatario.email,
+                            arrendatario.in_house_location
+                        )
+                    )
                 conn.commit()
-                new_id = cur.lastrowid
+                new_id = cur.lastrowid or next_id
                 logger.info(f"Created arrendatario with ID: {new_id}")
                 return {"id": new_id, "message": "Arrendatario created successfully"}
         except Exception as e:
