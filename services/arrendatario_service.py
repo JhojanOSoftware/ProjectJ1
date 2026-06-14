@@ -150,11 +150,8 @@ class ArrendatarioService:
                                 arrendatario.in_house_location
                             )
                         )
-                    else:
-                        # Fallback for id default missing (error 1364)
-                        if err_code != 1364 and "Field 'id' doesn't have a default value" not in err_text:
-                            raise
-
+                    elif "Field 'id' doesn't have a default value" in err_text or err_code == 1364:
+                        # Fallback for id default missing (error 1364) - manually insert with calculated id
                         cur.execute("SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM arrendatarios_J0")
                         next_row = cur.fetchone() or {"next_id": 1}
                         next_id = int(next_row.get("next_id", 1))
@@ -200,6 +197,9 @@ class ArrendatarioService:
                                     arrendatario.in_house_location
                                 )
                             )
+                    else:
+                        # Unknown error - re-raise
+                        raise
                 conn.commit()
                 new_id = cur.lastrowid or next_id
                 logger.info(f"Created arrendatario with ID: {new_id}")
