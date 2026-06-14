@@ -89,6 +89,35 @@ class ServiciosService:
                 )
                 
                 total = precio_agua + precio_luz + precio_aseo + precio_gas
+
+                # include any servicios_extra that may be present in the arr record
+                extras_total = 0
+                extras = []
+                if 'servicios_extra' in arr and arr.get('servicios_extra'):
+                    try:
+                        # arr['servicios_extra'] may be list or JSON string
+                        import json
+                        se = arr.get('servicios_extra')
+                        if isinstance(se, str):
+                            se_list = json.loads(se)
+                        else:
+                            se_list = se
+                        for item in se_list or []:
+                            # item may be dict with descripcion/valor
+                            valor = item.get('valor') if isinstance(item, dict) else None
+                            try:
+                                vnum = float(valor)
+                            except Exception:
+                                vnum = 0
+                            extras_total += vnum
+                            extras.append({
+                                'descripcion': item.get('descripcion') if isinstance(item, dict) else str(item),
+                                'valor': vnum
+                            })
+                    except Exception:
+                        extras = []
+
+                total += extras_total
                 suma_total += total
                 
                 preview_items.append({
@@ -103,7 +132,8 @@ class ServiciosService:
                         "aseo": round(precio_aseo, 2),
                         "gas": round(precio_gas, 2)
                     },
-                    "total": round(total, 2)
+                    "total": round(total, 2),
+                    "servicios_extra": extras
                 })
             
             logger.info(f"Preview built for {nombre_ubicacion}: {cantidad_arrendatarios} units")

@@ -143,6 +143,7 @@ async def generar_comprobante_end_point(
                     "direccion": entry["direccion_ubicacion"],
                     "personas_por_arrendatario": entry["personas_por_arrendatario"],
                     "servicios": entry["servicios"],
+                    "servicios_extra": entry.get("servicios_extra")
                 }
             )
 

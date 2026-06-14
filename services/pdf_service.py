@@ -85,18 +85,36 @@ class PDFService:
         
         try:
             for persona in personas_list:
-                servicios = persona.get("servicios", {})
+                servicios = persona.get("servicios") or {}
                 
                 # Convert to dictionary format if needed
-                if not isinstance(servicios, dict):
-                    servicios_dict = {
-                        'agua': servicios.get('agua', 0),
-                        'luz': servicios.get('luz', 0),
-                        'aseo': servicios.get('aseo', 0),
-                        'gas': servicios.get('gas', 0)
-                    }
+                # Normalize servicios into a dict with standard keys
+                if isinstance(servicios, dict):
+                    servicios_dict = dict(servicios)
                 else:
-                    servicios_dict = servicios
+                    servicios_dict = {
+                        "agua": servicios.get("agua", 0) if hasattr(servicios, 'get') else 0,
+                        "luz": servicios.get("luz", 0) if hasattr(servicios, 'get') else 0,
+                        "aseo": servicios.get("aseo", 0) if hasattr(servicios, 'get') else 0,
+                        "gas": servicios.get("gas", 0) if hasattr(servicios, 'get') else 0,
+                    }
+
+                # Flatten servicios_extra into normal service lines expected by the PDF generator
+                extras = persona.get('servicios_extra') or []
+                for extra in extras:
+                    if not isinstance(extra, dict):
+                        continue
+                    desc = str(extra.get('descripcion', '')).strip().lower()
+                    if not desc:
+                        continue
+                    try:
+                        val = float(extra.get('valor', 0) or 0)
+                    except Exception:
+                        val = 0
+                    if val <= 0:
+                        continue
+                    # If same key exists, accumulate it
+                    servicios_dict[desc] = float(servicios_dict.get(desc, 0) or 0) + val
                 
                 pdf_path = PDFService.generar_comprobantes_zip(
                     servicios_dict=servicios_dict,

@@ -67,7 +67,8 @@ async def generar_comprobantes(
                 "ubicacion": arr["nombre_ubicacion"],
                 "direccion": arr["direccion_ubicacion"],
                 "personas_por_arrendatario": arr["personas_por_arrendatario"],
-                "servicios": arr["servicios"]
+                "servicios": arr["servicios"],
+                "servicios_extra": arr.get("servicios_extra")
             })
         
         # Generate PDFs
@@ -107,14 +108,16 @@ async def generar_comprobantes_editado(
         for persona in datos.personas:
             servicios_dict = {}
             for servicio in persona.servicios:
-                servicios_dict[servicio.descripcion.lower()] = servicio.valor
+                valor = servicio.valor if servicio.valor is not None else 0
+                servicios_dict[servicio.descripcion.lower()] = valor
             
             personas_list.append({
                 "nombre": persona.nombre,
                 "ubicacion": persona.ubicacion,
                 "direccion": persona.direccion,
                 "personas_por_arrendatario": persona.personas_por_arrendatario or 1,
-                "servicios": servicios_dict
+                "servicios": servicios_dict,
+                "servicios_extra": [c.dict() for c in (persona.servicios_extra or [])]
             })
         
         # Generate PDFs
