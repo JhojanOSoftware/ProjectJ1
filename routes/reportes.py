@@ -1,8 +1,11 @@
 """Route handlers for reporting and PDF generation endpoints."""
-from fastapi import APIRouter, HTTPException, status, Form, BackgroundTasks
-from fastapi.responses import FileResponse, JSONResponse
-from typing import Optional
+import os
+import base64
 import logging
+from typing import Optional, List
+from fastapi import APIRouter, HTTPException, status, Form, BackgroundTasks, Response
+from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel
 
 from models.ClaseArrendatario import PDFData
 from services.servicios_service import ServiciosService
@@ -11,7 +14,61 @@ from services.recibo_service import ReciboService
 
 logger = logging.getLogger(__name__)
 
+# Standard router with prefix /api/v1
 router = APIRouter(prefix="/api/v1", tags=["reportes"])
+
+# Router for /api path prefix to support both /api/recibos and /api/v1/recibos
+router_recibos = APIRouter(prefix="/api", tags=["recibos"])
+
+
+# Pydantic models for receipt history storage
+class ReciboDetalleSchema(BaseModel):
+    concepto: str
+    monto: float
+
+class ReciboSchema(BaseModel):
+    id_arrendatario: int
+    nombre_arrendatario: str
+    monto_total: float
+    pdf_base64: str
+    detalle: List[ReciboDetalleSchema]
+
+class GuardarRecibosRequest(BaseModel):
+    mes: str
+    anio: int
+    recibos: List[ReciboSchema]
+
+
+def helper_encode_pdfs_response(zip_path: str, archive_files: List[str], personas_list: List[dict]) -> dict:
+    """Helper to convert generated ZIP and PDFs to base64 response."""
+    try:
+        # Encode ZIP file
+        with open(zip_path, "rb") as f:
+            zip_base64 = base64.b64encode(f.read()).decode("utf-8")
+            
+        # Encode individual PDFs
+        pdfs_response = []
+        for i, persona in enumerate(personas_list):
+            if i < len(archive_files):
+                file_path = archive_files[i]
+                with open(file_path, "rb") as f:
+                    pdf_b64 = base64.b64encode(f.read()).decode("utf-8")
+                pdfs_response.append({
+                    "id_arrendatario": persona.get("id_arrendatario") or persona.get("id") or 0,
+                    "nombre_arrendatario": persona.get("nombre", ""),
+                    "pdf_base64": pdf_b64
+                })
+        return {
+            "zip_base64": zip_base64,
+            "pdfs": pdf_response_list_format(pdfs_response, personas_list)
+        }
+    except Exception as e:
+        logger.error(f"Error encoding files to base64: {e}")
+        raise
+
+def pdf_response_list_format(pdfs_response: List[dict], personas_list: List[dict]) -> List[dict]:
+    # Ensure order matches
+    return pdfs_response
 
 
 @router.post("/preview-comprobantes/")
@@ -52,7 +109,7 @@ async def generar_comprobantes(
     """
     Generate PDF receipts for all tenants in a location.
     
-    Returns a ZIP file with all receipts.
+    Returns ZIP base64 and list of individual PDFs in base64.
     """
     try:
         # Build preview first to get all data
@@ -64,6 +121,7 @@ async def generar_comprobantes(
         personas_list = []
         for arr in preview["arrendatarios"]:
             personas_list.append({
+                "id_arrendatario": arr["id_arrendatario"],
                 "nombre": arr["nombre_arrendatario"],
                 "ubicacion": arr["nombre_ubicacion"],
                 "direccion": arr["direccion_ubicacion"],
@@ -75,15 +133,14 @@ async def generar_comprobantes(
         # Generate PDFs
         zip_path, archive_files = PDFService.generar_multiples_pdfs(personas_list)
         
-        # Schedule cleanup
+        # Build Base64 JSON response
+        response_data = helper_encode_pdfs_response(zip_path, archive_files, personas_list)
+        
+        # Schedule cleanup of temp files
         if background_tasks:
             background_tasks.add_task(PDFService.cleanup_temp_files, [zip_path.rsplit('/', 1)[0]])
-        
-        return FileResponse(
-            zip_path,
-            media_type="application/zip",
-            filename=zip_path.split('/')[-1]
-        )
+            
+        return JSONResponse(content=response_data)
     except Exception as e:
         logger.error(f"Error generating comprobantes: {e}")
         raise HTTPException(
@@ -100,8 +157,7 @@ async def generar_comprobantes_editado(
     """
     Generate PDF receipts from manually edited data.
     
-    Accepts custom service data for each person.
-    Returns a ZIP file with all receipts.
+    Returns ZIP base64 and list of individual PDFs in base64.
     """
     try:
         # Convert PersonaEditada models to dict format
@@ -113,6 +169,7 @@ async def generar_comprobantes_editado(
                 servicios_dict[servicio.descripcion.lower()] = valor
             
             personas_list.append({
+                "id_arrendatario": persona.id,
                 "nombre": persona.nombre,
                 "ubicacion": persona.ubicacion,
                 "direccion": persona.direccion,
@@ -124,15 +181,14 @@ async def generar_comprobantes_editado(
         # Generate PDFs
         zip_path, archive_files = PDFService.generar_multiples_pdfs(personas_list)
         
+        # Build Base64 JSON response
+        response_data = helper_encode_pdfs_response(zip_path, archive_files, personas_list)
+        
         # Schedule cleanup
         if background_tasks:
             background_tasks.add_task(PDFService.cleanup_temp_files, [zip_path.rsplit('/', 1)[0]])
-        
-        return FileResponse(
-            zip_path,
-            media_type="application/zip",
-            filename=zip_path.split('/')[-1]
-        )
+            
+        return JSONResponse(content=response_data)
     except Exception as e:
         logger.error(f"Error generating edited comprobantes: {e}")
         raise HTTPException(
@@ -150,167 +206,109 @@ async def generar_pdf_editado_legacy_alias(
     return await generar_comprobantes_editado(datos=datos, background_tasks=background_tasks)
 
 
-@router.post("/guardar-historial-recibos/")
-async def guardar_historial_recibos(
-    personas: list,
-    mes: int,
-    anio: int
-):
-    """
-    Save receipt history after successful PDF generation.
-    
-    This endpoint stores receipt data in database for historical tracking.
-    
-    Args:
-        personas: List of person dicts with: nombre, id, ubicacion, direccion,
-                 personas_por_arrendatario, servicios (dict), servicios_extra (list)
-        mes: Month (1-12)
-        anio: Year
-    """
+# --- HISTORICAL RECEIPTS ENDPOINTS ---
+
+async def handle_guardar_recibos(data: GuardarRecibosRequest):
     try:
-        if not personas:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No personas provided"
-            )
-        
-        if mes < 1 or mes > 12:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid month (1-12)"
-            )
-        
-        # Convert personas to proper format with id_arrendatario
-        personas_formatted = []
-        for p in personas:
-            personas_formatted.append({
-                "id_arrendatario": p.get("id"),
-                "nombre": p.get("nombre"),
-                "ubicacion": p.get("ubicacion"),
-                "direccion": p.get("direccion"),
-                "personas_por_arrendatario": p.get("personas_por_arrendatario", 1),
-                "servicios": p.get("servicios", {}),
-                "servicios_extra": p.get("servicios_extra", [])
+        recibos_list = []
+        for r in data.recibos:
+            recibos_list.append({
+                "id_arrendatario": r.id_arrendatario,
+                "nombre_arrendatario": r.nombre_arrendatario,
+                "monto_total": r.monto_total,
+                "pdf_base64": r.pdf_base64,
+                "detalle": [{"concepto": d.concepto, "monto": d.monto} for d in r.detalle]
             })
-        
-        success = ReciboService.guardar_historial_recibos(personas_formatted, mes, anio)
-        
+        success = ReciboService.guardar_historial_recibos(recibos_list, data.mes, data.anio)
         if success:
-            return {
-                "status": "success",
-                "message": f"Historial guardado para {len(personas)} arrendatarios",
-                "mes": mes,
-                "anio": anio
-            }
+            return {"success": True}
         else:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Error saving receipt history"
-            )
-    except HTTPException:
-        raise
+            return {"error": "No se pudo guardar el histórico en la base de datos"}
     except Exception as e:
-        logger.error(f"Error saving receipt history: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error saving receipt history: {str(e)}"
-        )
+        logger.error(f"Error saving historical receipts: {e}")
+        return {"error": str(e)}
 
-
-@router.get("/listar-recibos/")
-async def listar_recibos(
-    mes: Optional[int] = None,
+async def handle_query_recibos(
+    mes: Optional[str] = None,
     anio: Optional[int] = None,
-    id_arrendatario: Optional[int] = None,
-    nombre_arrendatario: Optional[str] = None
+    id_arrendatario: Optional[int] = None
 ):
-    """
-    List receipt history with optional filters.
-    
-    Args:
-        mes: Filter by month (1-12)
-        anio: Filter by year
-        id_arrendatario: Filter by tenant ID
-        nombre_arrendatario: Search by tenant name (partial)
-    """
     try:
-        recibos = ReciboService.listar_recibos(
-            mes=mes,
-            anio=anio,
-            id_arrendatario=id_arrendatario,
-            nombre_arrendatario=nombre_arrendatario
-        )
-        
-        return {
-            "status": "success",
-            "total": len(recibos),
-            "recibos": recibos
-        }
+        recibos = ReciboService.listar_recibos(mes=mes, anio=anio, id_arrendatario=id_arrendatario)
+        return {"recibos": recibos}
     except Exception as e:
-        logger.error(f"Error listing receipts: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error listing receipts: {str(e)}"
-        )
+        logger.error(f"Error listing historical receipts: {e}")
+        return {"error": str(e)}
 
-
-@router.get("/detalle-recibo/{id_recibo}")
-async def detalle_recibo(id_recibo: int):
-    """Get detailed information for a specific receipt."""
+async def handle_descargar_pdf(id_recibo: int):
     try:
-        detalle = ReciboService.obtener_detalle_recibo(id_recibo)
+        res = ReciboService.obtener_pdf_recibo(id_recibo)
+        if not res:
+            raise HTTPException(status_code=404, detail="Recibo no encontrado")
         
-        if not detalle:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Receipt not found"
-            )
+        nombre_arrendatario, pdf_base64 = res
+        if not pdf_base64:
+            raise HTTPException(status_code=404, detail="PDF no disponible en la base de datos")
+            
+        pdf_bytes = base64.b64decode(pdf_base64)
+        safe_name = nombre_arrendatario.replace(" ", "_").replace("/", "_")
+        filename = f"recibo_{safe_name}_{id_recibo}.pdf"
         
-        return {
-            "status": "success",
-            "recibo": detalle
-        }
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            }
+        )
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting receipt detail: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting receipt detail: {str(e)}"
-        )
+        logger.error(f"Error retrieving PDF bytes: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/meses-disponibles/")
-async def meses_disponibles(anio: Optional[int] = None):
-    """Get available months with receipt data."""
-    try:
-        meses = ReciboService.obtener_meses_disponibles(anio=anio)
-        
-        return {
-            "status": "success",
-            "meses": meses
-        }
-    except Exception as e:
-        logger.error(f"Error getting available months: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting available months: {str(e)}"
-        )
+# Register endpoints under both prefixes /api and /api/v1
+@router_recibos.post("/recibos/guardar")
+async def api_guardar_recibos(data: GuardarRecibosRequest):
+    res = await handle_guardar_recibos(data)
+    if "error" in res:
+        return JSONResponse(status_code=500, content=res)
+    return res
 
+@router.post("/recibos/guardar")
+async def api_v1_guardar_recibos(data: GuardarRecibosRequest):
+    res = await handle_guardar_recibos(data)
+    if "error" in res:
+        return JSONResponse(status_code=500, content=res)
+    return res
 
-@router.get("/anos-disponibles/")
-async def anos_disponibles():
-    """Get available years with receipt data."""
-    try:
-        anos = ReciboService.obtener_anos_disponibles()
-        
-        return {
-            "status": "success",
-            "anos": anos
-        }
-    except Exception as e:
-        logger.error(f"Error getting available years: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting available years: {str(e)}"
-        )
+@router_recibos.get("/recibos")
+async def api_query_recibos(
+    mes: Optional[str] = None,
+    anio: Optional[int] = None,
+    id_arrendatario: Optional[int] = None
+):
+    res = await handle_query_recibos(mes, anio, id_arrendatario)
+    if isinstance(res, dict) and "error" in res:
+        return JSONResponse(status_code=500, content=res)
+    return res
+
+@router.get("/recibos")
+async def api_v1_query_recibos(
+    mes: Optional[str] = None,
+    anio: Optional[int] = None,
+    id_arrendatario: Optional[int] = None
+):
+    res = await handle_query_recibos(mes, anio, id_arrendatario)
+    if isinstance(res, dict) and "error" in res:
+        return JSONResponse(status_code=500, content=res)
+    return res
+
+@router_recibos.get("/recibos/{id_recibo}/pdf")
+async def api_descargar_pdf(id_recibo: int):
+    return await handle_descargar_pdf(id_recibo)
+
+@router.get("/recibos/{id_recibo}/pdf")
+async def api_v1_descargar_pdf(id_recibo: int):
+    return await handle_descargar_pdf(id_recibo)

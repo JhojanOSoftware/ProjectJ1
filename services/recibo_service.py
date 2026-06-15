@@ -1,29 +1,24 @@
-"""Service for managing receipt history and traceability."""
+"""Service for managing receipt history and database persistence."""
 import logging
-import uuid
 from datetime import datetime
 from typing import List, Dict, Optional, Tuple
-from decimal import Decimal
-import json
-
 from utils.database import DatabaseConnection
 
 logger = logging.getLogger(__name__)
-
 
 class ReciboService:
     """Service for managing receipt history and storage."""
     
     @staticmethod
-    def guardar_historial_recibos(personas_list: List[Dict], mes: int, anio: int) -> bool:
+    def guardar_historial_recibos(recibos_list: List[Dict], mes: str, anio: int) -> bool:
         """
         Save receipt history for multiple tenants in a single transaction.
         
         Args:
-            personas_list: List of dicts with: nombre, id_arrendatario, ubicacion, direccion, 
-                          personas_por_arrendatario, servicios (dict), servicios_extra (list)
-            mes: Month (1-12)
-            anio: Year
+            recibos_list: List of dicts with: id_arrendatario, nombre_arrendatario, 
+                          monto_total, pdf_base64, detalle (list of {concepto, monto})
+            mes: Month name (e.g., 'Junio')
+            anio: Year (e.g., 2026)
             
         Returns:
             True if successful, False otherwise
@@ -33,79 +28,47 @@ class ReciboService:
         cursor = conn.cursor()
         
         try:
-            conn.begin()  # Explicit transaction start
+            conn.begin()  # Start transaction
             
-            for persona in personas_list:
-                id_recibo = str(uuid.uuid4())
-                id_arrendatario = persona.get("id_arrendatario") or persona.get("id") or 0
-                nombre_arrendatario = persona.get("nombre", "")
-                
-                # Calculate total
-                servicios = persona.get("servicios", {})
-                valor_total = sum(float(v) for v in servicios.values() if v)
-                
-                # Add servicios_extra if present
-                servicios_extra = persona.get("servicios_extra") or []
-                for extra in servicios_extra:
-                    if isinstance(extra, dict):
-                        try:
-                            valor_total += float(extra.get("valor", 0) or 0)
-                        except (ValueError, TypeError):
-                            pass
+            for recibo in recibos_list:
+                id_arrendatario = recibo.get("id_arrendatario")
+                nombre_arrendatario = recibo.get("nombre_arrendatario")
+                monto_total = recibo.get("monto_total")
+                pdf_base64 = recibo.get("pdf_base64")
                 
                 # Insert into recibos
                 insert_recibo = """
                 INSERT INTO recibos 
-                (id_recibo, id_arrendatario, nombre_arrendatario, mes, anio, valor_total, fecha_generacion)
+                (id_arrendatario, nombre_arrendatario, mes, anio, monto_total, pdf_base64, fecha_generacion)
                 VALUES (%s, %s, %s, %s, %s, %s, NOW())
                 """
-                
                 cursor.execute(insert_recibo, (
-                    id_recibo,
                     id_arrendatario,
                     nombre_arrendatario,
                     mes,
                     anio,
-                    valor_total
+                    monto_total,
+                    pdf_base64
                 ))
                 
-                # Get the inserted ID
-                id_recibo_fk = cursor.lastrowid
+                # Get the inserted id_recibo
+                id_recibo = cursor.lastrowid
                 
-                # Insert details (servicios principales)
+                # Insert details into recibo_detalle
                 insert_detalle = """
-                INSERT INTO recibo_detalle (id_recibo_fk, concepto, valor)
+                INSERT INTO recibo_detalle (id_recibo, concepto, monto)
                 VALUES (%s, %s, %s)
                 """
                 
-                for concepto, valor in servicios.items():
-                    if valor:
-                        try:
-                            cursor.execute(insert_detalle, (
-                                id_recibo_fk,
-                                str(concepto).capitalize(),
-                                float(valor)
-                            ))
-                        except Exception as e:
-                            logger.warning(f"Error inserting detail {concepto}: {e}")
-                
-                # Insert servicios_extra
-                for extra in servicios_extra:
-                    if isinstance(extra, dict):
-                        concepto = extra.get("descripcion", "Concepto adicional")
-                        valor = extra.get("valor", 0)
-                        if valor:
-                            try:
-                                cursor.execute(insert_detalle, (
-                                    id_recibo_fk,
-                                    str(concepto),
-                                    float(valor)
-                                ))
-                            except Exception as e:
-                                logger.warning(f"Error inserting extra detail {concepto}: {e}")
+                for det in recibo.get("detalle", []):
+                    cursor.execute(insert_detalle, (
+                        id_recibo,
+                        det.get("concepto"),
+                        det.get("monto")
+                    ))
             
             conn.commit()
-            logger.info(f"Saved {len(personas_list)} receipt records for {mes}/{anio}")
+            logger.info(f"Saved {len(recibos_list)} receipt records for {mes}/{anio}")
             return True
             
         except Exception as e:
@@ -118,43 +81,36 @@ class ReciboService:
     
     @staticmethod
     def listar_recibos(
-        mes: Optional[int] = None,
+        mes: Optional[str] = None,
         anio: Optional[int] = None,
-        id_arrendatario: Optional[int] = None,
-        nombre_arrendatario: Optional[str] = None,
-        limite: int = 100,
-        offset: int = 0
+        id_arrendatario: Optional[int] = None
     ) -> List[Dict]:
         """
         List receipts with optional filtering.
         
         Args:
-            mes: Filter by month (1-12), optional
+            mes: Filter by month name, optional
             anio: Filter by year, optional
             id_arrendatario: Filter by tenant ID, optional
-            nombre_arrendatario: Search by tenant name (partial match), optional
-            limite: Limit results
-            offset: Pagination offset
             
         Returns:
-            List of receipt records
+            List of receipt records with details (excluding pdf_base64)
         """
         db = DatabaseConnection()
         conn = db.connect()
         cursor = conn.cursor()
         
         try:
-            # Build dynamic query
             query = """
             SELECT 
-                id, id_recibo, id_arrendatario, nombre_arrendatario, 
-                mes, anio, valor_total, fecha_generacion
+                id_recibo, id_arrendatario, nombre_arrendatario, 
+                mes, anio, monto_total, fecha_generacion
             FROM recibos
             WHERE 1=1
             """
             params = []
             
-            if mes is not None:
+            if mes:
                 query += " AND mes = %s"
                 params.append(mes)
             
@@ -166,18 +122,39 @@ class ReciboService:
                 query += " AND id_arrendatario = %s"
                 params.append(id_arrendatario)
             
-            if nombre_arrendatario:
-                query += " AND nombre_arrendatario LIKE %s"
-                params.append(f"%{nombre_arrendatario}%")
-            
-            # Order by most recent first
-            query += " ORDER BY fecha_generacion DESC LIMIT %s OFFSET %s"
-            params.extend([limite, offset])
+            query += " ORDER BY fecha_generacion DESC"
             
             cursor.execute(query, params)
             results = cursor.fetchall()
             
-            return results or []
+            recibos = []
+            for row in results:
+                # Convert datetime to string
+                fecha = row["fecha_generacion"]
+                if isinstance(fecha, datetime):
+                    fecha_str = fecha.strftime("%Y-%m-%d %H:%M:%S")
+                else:
+                    fecha_str = str(fecha)
+                
+                # Fetch details
+                cursor.execute(
+                    "SELECT concepto, monto FROM recibo_detalle WHERE id_recibo = %s",
+                    (row["id_recibo"],)
+                )
+                details = cursor.fetchall()
+                
+                recibos.append({
+                    "id_recibo": row["id_recibo"],
+                    "id_arrendatario": row["id_arrendatario"],
+                    "nombre_arrendatario": row["nombre_arrendatario"],
+                    "mes": row["mes"],
+                    "anio": row["anio"],
+                    "monto_total": float(row["monto_total"]),
+                    "fecha_generacion": fecha_str,
+                    "detalle": [{"concepto": d["concepto"], "monto": float(d["monto"])} for d in details]
+                })
+                
+            return recibos
             
         except Exception as e:
             logger.error(f"Error listing receipts: {e}")
@@ -185,116 +162,34 @@ class ReciboService:
         finally:
             cursor.close()
             conn.close()
-    
+            
     @staticmethod
-    def obtener_detalle_recibo(id_recibo: int) -> Dict:
+    def obtener_pdf_recibo(id_recibo: int) -> Optional[Tuple[str, str]]:
         """
-        Get detailed information for a specific receipt.
+        Get PDF base64 for a specific receipt.
         
         Args:
             id_recibo: Receipt ID
             
         Returns:
-            Dictionary with receipt header and details
+            Tuple of (nombre_arrendatario, pdf_base64) or None
         """
         db = DatabaseConnection()
         conn = db.connect()
         cursor = conn.cursor()
         
         try:
-            # Get header
-            query_header = """
-            SELECT 
-                id, id_recibo, id_arrendatario, nombre_arrendatario, 
-                mes, anio, valor_total, fecha_generacion
-            FROM recibos
-            WHERE id = %s
-            """
-            cursor.execute(query_header, (id_recibo,))
-            header = cursor.fetchone()
-            
-            if not header:
-                return {}
-            
-            # Get details
-            query_details = """
-            SELECT concepto, valor
-            FROM recibo_detalle
-            WHERE id_recibo_fk = %s
-            ORDER BY concepto
-            """
-            cursor.execute(query_details, (id_recibo,))
-            details = cursor.fetchall()
-            
-            return {
-                **header,
-                "detalles": details or []
-            }
-            
+            cursor.execute(
+                "SELECT nombre_arrendatario, pdf_base64 FROM recibos WHERE id_recibo = %s",
+                (id_recibo,)
+            )
+            row = cursor.fetchone()
+            if row:
+                return row["nombre_arrendatario"], row["pdf_base64"]
+            return None
         except Exception as e:
-            logger.error(f"Error getting receipt detail: {e}")
-            return {}
-        finally:
-            cursor.close()
-            conn.close()
-    
-    @staticmethod
-    def obtener_meses_disponibles(anio: Optional[int] = None) -> List[Dict]:
-        """
-        Get list of available months with receipt data.
-        
-        Args:
-            anio: Optional year filter
-            
-        Returns:
-            List of {mes, anio, cantidad}
-        """
-        db = DatabaseConnection()
-        conn = db.connect()
-        cursor = conn.cursor()
-        
-        try:
-            query = """
-            SELECT DISTINCT mes, anio, COUNT(*) as cantidad
-            FROM recibos
-            """
-            params = []
-            
-            if anio is not None:
-                query += " WHERE anio = %s"
-                params.append(anio)
-            
-            query += " GROUP BY mes, anio ORDER BY anio DESC, mes DESC"
-            
-            cursor.execute(query, params)
-            results = cursor.fetchall()
-            
-            return results or []
-            
-        except Exception as e:
-            logger.error(f"Error getting available months: {e}")
-            return []
-        finally:
-            cursor.close()
-            conn.close()
-    
-    @staticmethod
-    def obtener_anos_disponibles() -> List[int]:
-        """Get list of available years with receipt data."""
-        db = DatabaseConnection()
-        conn = db.connect()
-        cursor = conn.cursor()
-        
-        try:
-            query = "SELECT DISTINCT anio FROM recibos ORDER BY anio DESC"
-            cursor.execute(query)
-            results = cursor.fetchall()
-            
-            return [row["anio"] for row in results] if results else []
-            
-        except Exception as e:
-            logger.error(f"Error getting available years: {e}")
-            return []
+            logger.error(f"Error getting pdf for receipt {id_recibo}: {e}")
+            return None
         finally:
             cursor.close()
             conn.close()

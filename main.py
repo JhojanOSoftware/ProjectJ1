@@ -16,7 +16,7 @@ from config import ALLOWED_ORIGINS, DEBUG, LOG_LEVEL
 
 # Import routers
 from routes.arrendatarios import router as arrendatarios_router
-from routes.reportes import router as reportes_router
+from routes.reportes import router as reportes_router, router_recibos as reportes_router_recibos
 from routes.legacy import router as legacy_router
 
 # Configure logging
@@ -62,6 +62,7 @@ except Exception as e:
 # Include routers
 app.include_router(arrendatarios_router)
 app.include_router(reportes_router)
+app.include_router(reportes_router_recibos)
 app.include_router(legacy_router)
 
 
